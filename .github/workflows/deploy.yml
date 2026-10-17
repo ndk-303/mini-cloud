@@ -56,16 +56,17 @@ jobs:
           USER: ${{ secrets.EC2_USER || 'ubuntu' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
-          # 1. Cấu hình SSH private key an toàn
           mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
+
+          # Ghi private key đảm bảo nguyên vẹn định dạng và newline kết thúc
+          printf "%s\n" "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # 2. Thêm host vào known_hosts để tránh hỏi xác nhận fingerprint
+          # Tránh kiểm tra fingerprint tương tác
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          # 3. Kết nối SSH và chạy script deploy
-          ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no "$USER@$HOST" << 'EOF'
+          # Thực hiện kết nối SSH với private key chỉ định rõ (-i ~/.ssh/id_rsa)
+          ssh -i ~/.ssh/id_rsa -o ConnectTimeout=15 -o StrictHostKeyChecking=no "$USER@$HOST" << 'EOF'
             set -e
             mkdir -p ~/myminicloud
             cd ~/myminicloud
@@ -73,7 +74,7 @@ jobs:
             # Cập nhật username Docker Hub vào .env
             echo "DOCKER_USER=$DOCKERHUB_USERNAME" > .env
 
-            # Pull code mới nhất nếu đã clone repo
+            # Pull code mới nhất nếu thư mục đã có git repo
             if [ -d .git ]; then
               git pull origin master || git pull origin main || true
             fi
