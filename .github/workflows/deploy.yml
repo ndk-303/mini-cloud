@@ -57,7 +57,7 @@ jobs:
           SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER || 'ec2-user' }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           mkdir -p ~/.ssh
 
@@ -68,25 +68,12 @@ jobs:
           # 2. Thêm host vào known_hosts
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          # 3. Tạo thư mục đích trên EC2
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/myminicloud"
+          # 3. Tạo thư mục đích trên EC2 và ghi file .env
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/myminicloud && echo 'DOCKER_USER=$DOCKERHUB_USER' > ~/myminicloud/.env"
 
           # 4. Tự động copy docker-compose.yml và các thư mục config sang EC2
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy storage ~/myminicloud/ 2>/dev/null || \
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy storage "$USER@$HOST:~/myminicloud/" 2>/dev/null || \
           scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy "$USER@$HOST:~/myminicloud/"
 
           # 5. Thực hiện pull image và khởi chạy container
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" << EOF
-            set -e
-            cd ~/myminicloud
-
-            # Cấu hình user Docker Hub
-            echo "DOCKER_USER=$DOCKERHUB_USERNAME" > .env
-
-            # Đảm bảo docker daemon đang chạy (đặc biệt hữu ích trên Amazon Linux)
-            sudo systemctl start docker || true
-
-            # Pull images từ Docker Hub và khởi chạy
-            docker compose pull
-            docker compose up -d --scale web-frontend-server=2 --remove-orphans
-          EOF
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/myminicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --scale web-frontend-server=2 --remove-orphans"
