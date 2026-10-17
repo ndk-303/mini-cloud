@@ -49,30 +49,36 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
-      - name: Checkout Code for Deploy Files
-        uses: actions/checkout@v4
+      - name: Setup SSH Key & Deploy to EC2
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          # 1. Cấu hình SSH private key an toàn
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER || 'ubuntu' }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # 1. Tạo thư mục làm việc nếu chưa có
+          # 2. Thêm host vào known_hosts để tránh hỏi xác nhận fingerprint
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # 3. Kết nối SSH và chạy script deploy
+          ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no "$USER@$HOST" << 'EOF'
+            set -e
             mkdir -p ~/myminicloud
             cd ~/myminicloud
 
-            # 2. Cập nhật các file cấu hình mới nhất từ git (hoặc tạo file .env)
-            echo "DOCKER_USER=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+            # Cập nhật username Docker Hub vào .env
+            echo "DOCKER_USER=$DOCKERHUB_USERNAME" > .env
 
-            # Nếu EC2 đã clone repo sẵn, pull git:
+            # Pull code mới nhất nếu đã clone repo
             if [ -d .git ]; then
-              git pull origin master || git pull origin main
+              git pull origin master || git pull origin main || true
             fi
 
-            # 3. Pull images mới nhất từ Docker Hub về
+            # Pull images mới nhất và khởi chạy
             docker compose pull
-
-            # 4. Khởi chạy lại hệ thống không gián đoạn
             docker compose up -d --scale web-frontend-server=2 --remove-orphans
+          EOF
