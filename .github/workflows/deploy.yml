@@ -1,0 +1,78 @@
+name: CI/CD Pipeline - MyMiniCloud
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  # ── JOB 1: BUILD & PUSH DOCKER IMAGES ──────────────────────────────────────
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Web Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-web:latest
+
+      - name: Build and Push Backend App Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-app:latest
+
+      - name: Build and Push API Gateway Proxy Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./proxy
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-proxy:latest
+
+  # ── JOB 2: DEPLOY TO AWS EC2 ────────────────────────────────────────────────
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout Code for Deploy Files
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 1. Tạo thư mục làm việc nếu chưa có
+            mkdir -p ~/myminicloud
+            cd ~/myminicloud
+
+            # 2. Cập nhật các file cấu hình mới nhất từ git (hoặc tạo file .env)
+            echo "DOCKER_USER=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+
+            # Nếu EC2 đã clone repo sẵn, pull git:
+            if [ -d .git ]; then
+              git pull origin master || git pull origin main
+            fi
+
+            # 3. Pull images mới nhất từ Docker Hub về
+            docker compose pull
+
+            # 4. Khởi chạy lại hệ thống không gián đoạn
+            docker compose up -d --scale web-frontend-server=2 --remove-orphans
