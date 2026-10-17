@@ -1,6 +1,6 @@
 # MyMiniCloud – Cloud Simulation Platform
 
-Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net` và điều phối qua `docker-compose.yml`.
+Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net`, điều phối linh hoạt qua `docker-compose.yml`, tích hợp **Dynamic Scaling**, tự động hóa với **GitHub Actions CI/CD** và được tối ưu hóa tài nguyên hoàn hảo cho máy chủ **VPS 1GB RAM (AWS EC2)**.
 
 ---
 
@@ -8,16 +8,16 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 | STT | Service Name | Loại Image | Tên Image (Docker Hub) | Port (Host:Container) | Vai trò |
 | :-- | :--- | :--- | :--- | :--- | :--- |
-| 1 | `web-frontend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Scaled) | Web tĩnh & Blog |
-| 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API |
-| 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL MariaDB |
-| 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak |
+| 1 | `web-frontend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Dynamic Scaled) | Web tĩnh & Blog cá nhân (Round-Robin) |
+| 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API & DB Connection |
+| 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL quan hệ MariaDB |
+| 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak (OIDC Token) |
 | 5 | `object-storage-server` | **Official** | `chrislusf/seaweedfs:latest` | `9000:9000`, `9001:9001` | Object Storage SeaweedFS (S3 API & Web UI) |
-| 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 |
-| 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics Node |
-| 7b | `monitoring-prometheus-server` | **Official** | `prom/prometheus:latest` | `9090:9090` | Thu thập & lưu trữ Metrics |
-| 8 | `monitoring-grafana-dashboard-server`| **Official** | `grafana/grafana:latest` | `3000:3000` | Dashboard Grafana |
-| 9 | `api-gateway-proxy-server` | **Custom (Dockerfile)** | `<user>/myminicloud-proxy:latest` | `80:80` | Nginx Gateway & Proxy |
+| 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 (`cloud.local`) |
+| 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics tài nguyên Node |
+| 7b | `monitoring-prometheus-server` | **Official** | `prom/prometheus:latest` | `9090:9090` | Thu thập & lưu trữ Metrics hệ thống |
+| 8 | `monitoring-grafana-dashboard-server`| **Official** | `grafana/grafana:latest` | `3000:3000` | Dashboard trực quan hóa Grafana |
+| 9 | `api-gateway-proxy-server` | **Custom (Dockerfile)** | `<user>/myminicloud-proxy:latest` | `80:80` | Nginx Gateway, Routing & Load Balancing |
 
 ---
 
@@ -25,76 +25,84 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ```text
 .
-├── app/                  # Custom Backend (có Dockerfile riêng)
-├── auth/                 # Keycloak identity
+├── app/                  # Custom Backend Flask API + students.json (có Dockerfile)
+├── auth/                 # Keycloak identity volume (.gitkeep)
 ├── db/                   # MariaDB init scripts (001_init.sql, 002_studentdb.sql)
-├── dns/                  # Bind9 DNS configs & cloud.local zone
-├── grafana/              # Grafana dashboards
+├── dns/                  # Bind9 DNS configs & db.cloud.local zone
+├── grafana/              # Grafana dashboards (.gitkeep)
 ├── monitor/              # Prometheus config (prometheus.yml)
-├── proxy/                # Custom Gateway Nginx (có Dockerfile riêng)
-├── storage/              # MinIO Object Storage volume
-├── web/                  # Custom Web Frontend (có Dockerfile riêng)
+├── proxy/                # Custom Gateway Nginx Dynamic DNS (có Dockerfile)
+├── storage/              # SeaweedFS Object Storage volume data
+├── web/                  # Custom Web Frontend HTML & 3 Blog posts (có Dockerfile)
+├── .github/workflows/    # Pipeline CI/CD tự động (deploy.yml)
 ├── docker-compose.yml    # File điều phối toàn bộ 9 services
-├── .env.example          # File mẫu cấu hình username Docker Hub
+├── .env.example          # Mẫu cấu hình biến môi trường
 └── README.md
 ```
 
 ---
 
-## 📦 Quy Trình Build & Push Lên Docker Hub
+## ⚡ Tối Ưu Hóa Bộ Nhớ Cho VPS 1GB RAM (AWS EC2)
 
-### Bước 1: Đăng nhập Docker Hub
-```bash
-docker login
-```
+Để hệ thống 9 server hoạt động mượt mà và không bao giờ bị OOM (Out Of Memory) Crash trên máy chủ 1GB RAM:
 
-### Bước 2: Thiết lập biến môi trường Username của bạn
-* **Trên Linux / EC2 / macOS**:
-  ```bash
-  export DOCKER_USER="username_dockerhub_cua_ban"
-  ```
-* **Trên Windows PowerShell**:
-  ```powershell
-  $env:DOCKER_USER="username_dockerhub_cua_ban"
-  ```
-*(Hoặc tạo file `.env` với nội dung `DOCKER_USER=username_dockerhub_cua_ban`)*
-
-### Bước 3: Build và Push toàn bộ custom images
-```bash
-# 1. Build các images tự code
-docker compose build
-
-# 2. Push lên Docker Hub
-docker compose push
-```
+1. **Tạo 2GB Swap Memory (Bắt buộc chạy trên EC2)**:
+   ```bash
+   sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile && echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+   ```
+2. **Cấu hình kìm hãm tài nguyên trong `docker-compose.yml`**:
+   * **Keycloak**: Giới hạn JVM Heap `-Xms64m -Xmx300m -XX:+UseSerialGC` và trần RAM `450M`.
+   * **MariaDB**: Tắt `performance_schema=OFF`, đệm `innodb_buffer_pool_size=64M`.
+   * **SeaweedFS**: Thay thế MinIO giúp giảm tải RAM từ 150MB xuống chỉ còn **~30MB - 50MB**.
+   * Toàn bộ services đều được thiết lập trần bộ nhớ (`deploy.resources.limits.memory`).
 
 ---
 
-## 🚀 Triển Khai Trên Máy Mới / EC2 (Chỉ Pull và Chạy)
+## 🔄 Dynamic Scaling (Mở rộng Web Server không cần sửa code)
 
-Trên máy chủ mới (EC2) không cần build lại source code, chỉ cần tải `docker-compose.yml` (hoặc clone repo) rồi pull images về:
+Hệ thống sử dụng Docker Internal DNS Resolver (`127.0.0.11`) trong Nginx Proxy để tự động cân bằng tải Round-Robin khi scale:
 
 ```bash
-# Đặt username dockerhub chứa image
-export DOCKER_USER="username_dockerhub_cua_ban"
-
-# Tải tất cả image (cả official và custom từ Docker Hub)
-docker compose pull
-
-# Khởi chạy hệ thống (scale 2 web frontend)
+# Chạy với 2 Web Frontend instances
 docker compose up -d --scale web-frontend-server=2
+
+# Tăng tải lên 4 Web Frontend instances
+docker compose up -d --scale web-frontend-server=4
+
+# Kiểm tra danh sách container
+docker compose ps
 ```
 
 ---
 
-## 🧪 Kiểm Thử Nhanh (Endpoints)
+## 🚀 Tự Động Hóa CI/CD (GitHub Actions)
 
-* **Trang chủ Web**: [http://localhost](http://localhost) (hoặc qua IP Public EC2)
-* **Blog cá nhân**: [http://localhost/blog/](http://localhost/blog/)
-* **Backend Hello API**: [http://localhost/api/hello](http://localhost/api/hello)
-* **API Sinh viên (JSON)**: [http://localhost/student/](http://localhost/student/)
-* **API Sinh viên (DB CRUD)**: [http://localhost/api/students-db](http://localhost/api/students-db)
-* **Keycloak Admin**: [http://localhost:8081](http://localhost:8081) (`admin` / `admin`)
-* **MinIO Console**: [http://localhost:9001](http://localhost:9001) (`minioadmin` / `minioadmin`)
-* **Prometheus**: [http://localhost:9090](http://localhost:9090)
-* **Grafana**: [http://localhost:3000](http://localhost:3000) (`admin` / `admin`)
+Mỗi lần `git push origin main`:
+1. **CI**: GitHub Actions tự động build 3 custom images (`web`, `app`, `proxy`) và push lên Docker Hub của bạn.
+2. **CD**: SSH an toàn vào EC2, tự động đồng bộ file cấu hình qua `scp`, pull images mới nhất và reload container (`docker compose up -d`).
+
+### Cấu hình Secrets trên GitHub Repo:
+Vào **Settings** ➔ **Secrets and variables** ➔ **Actions**:
+* `DOCKERHUB_USERNAME`: Tên tài khoản Docker Hub.
+* `DOCKERHUB_TOKEN`: Personal Access Token trên Docker Hub (quyền *Read & Write*).
+* `EC2_HOST`: Địa chỉ IP Public hoặc Public IPv4 DNS của EC2.
+* `EC2_SSH_KEY`: Toàn bộ nội dung file `.pem` dùng để SSH.
+* `EC2_USER`: `ec2-user` (Amazon Linux) hoặc `ubuntu` (Ubuntu).
+
+---
+
+## 🧪 Danh Sách Kiểm Thử Các Dịch Vụ (Endpoints)
+
+| Dịch vụ | Đường dẫn truy cập | Kết quả kiểm thử kỳ vọng |
+| :--- | :--- | :--- |
+| **Web Home** | `http://<IP_EC2>/` | Giao diện trang chủ MyMiniCloud (Load-balanced) |
+| **Web Blog** | `http://<IP_EC2>/blog/` | Danh mục 3 bài viết kỹ thuật (Docker, Cloud, Linux) |
+| **API Hello** | `http://<IP_EC2>/api/hello` | Trả về JSON `{"message": "Hello from App Server!"}` |
+| **API Sinh viên (JSON)** | `http://<IP_EC2>/student/` | Danh sách 5 sinh viên từ `students.json` |
+| **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Đọc dữ liệu từ MariaDB `studentdb` |
+| **Keycloak Admin** | `http://<IP_EC2>:8081` | Đăng nhập Admin Console (`admin` / `admin`) |
+| **SeaweedFS S3 API** | `http://<IP_EC2>:9000` | Cổng API S3 tạo Bucket & Upload File |
+| **SeaweedFS Web UI** | `http://<IP_EC2>:9001` | Trình duyệt giao diện xem Volume / File |
+| **Prometheus** | `http://<IP_EC2>:9090` | Quản lý metrics hệ thống, xem trạng thái targets UP |
+| **Grafana** | `http://<IP_EC2>:3000` | Dashboard biểu đồ CPU, RAM, Network (`admin` / `admin`) |
+| **Internal DNS** | Port UDP `1053` | Phân giải `web-frontend-server.cloud.local` |
