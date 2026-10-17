@@ -7,9 +7,12 @@ services:
   web-frontend-server:
     build: ./web
     image: hotensv/web:dev
-    # Không dùng container_name và không hardcode host port để scale linh hoạt
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
 
   # ── 2. Application Backend ──────────────────────────────────────────────────
   application-backend-server:
@@ -22,11 +25,22 @@ services:
       OIDC_ISSUER: "http://authentication-identity-server:8080/realms/master"
       OIDC_AUDIENCE: "myapp"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # ── 3. Relational Database ──────────────────────────────────────────────────
   relational-database-server:
     image: mariadb:11
     container_name: relational-database-server
+    command: [
+      "mariadbd",
+      "--performance_schema=OFF",
+      "--innodb_buffer_pool_size=64M",
+      "--innodb_log_buffer_size=8M",
+      "--max_connections=20"
+    ]
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: minicloud
@@ -35,6 +49,10 @@ services:
     ports: ["3306:3306"]
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M
 
   # ── 4. Authentication / Identity (Keycloak) ─────────────────────────────────
   authentication-identity-server:
@@ -47,9 +65,15 @@ services:
       KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
+      # Tối ưu JVM Heap cho VPS 1GB RAM (Chỉ cấp tối đa 300MB heap)
+      JAVA_OPTS_APPEND: "-Xms64m -Xmx300m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
     ports: ["8081:8080"]
     restart: unless-stopped
     networks: [cloud-net]
+    deploy:
+      resources:
+        limits:
+          memory: 450M
 
   # ── 5. Object Storage (MinIO) ───────────────────────────────────────────────
   object-storage-server:
@@ -64,6 +88,10 @@ services:
     ports: ["9000:9000", "9001:9001"]
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # ── 6. Internal DNS (Bind9) ─────────────────────────────────────────────────
   internal-dns-server:
@@ -76,6 +104,10 @@ services:
       - ./dns/db.cloud.local:/etc/bind/db.cloud.local:ro
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
 
   # ── 7a. Monitoring Agent (Node Exporter) ────────────────────────────────────
   monitoring-node-exporter-server:
@@ -84,16 +116,30 @@ services:
     ports: ["9100:9100"]
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 32M
 
   # ── 7b. Monitoring Server (Prometheus) ──────────────────────────────────────
   monitoring-prometheus-server:
     image: prom/prometheus:latest
     container_name: monitoring-prometheus-server
+    command: [
+      "--config.file=/etc/prometheus/prometheus.yml",
+      "--storage.tsdb.path=/prometheus",
+      "--storage.tsdb.retention.time=2d",
+      "--storage.tsdb.retention.size=500MB"
+    ]
     ports: ["9090:9090"]
     volumes:
       - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # ── 8. Visualization (Grafana) ──────────────────────────────────────────────
   monitoring-grafana-dashboard-server:
@@ -102,6 +148,10 @@ services:
     ports: ["3000:3000"]
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # ── 9. API Gateway / Reverse Proxy (Nginx) ──────────────────────────────────
   api-gateway-proxy-server:
@@ -116,3 +166,7 @@ services:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
     networks: [cloud-net]
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
