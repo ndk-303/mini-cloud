@@ -74,9 +74,10 @@ services:
         limits:
           memory: 450M
 
-  # ── 5. Object Storage (Official Image) ──────────────────────────────────────
+  # ── 5. Object Storage (Custom Build with MinIO Official Binary) ────────────
   object-storage-server:
-    image: minio/minio:latest
+    build: ./storage
+    image: ${DOCKER_USER:-hotensv}/myminicloud-storage:latest
     container_name: object-storage-server
     command: ["server", "/data", "--console-address", ":9001"]
     environment:
