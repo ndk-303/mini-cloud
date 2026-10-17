@@ -4,20 +4,20 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống (9 Servers)
+## 🏗️ Kiến Trúc 9 Servers & Phân Loại Image
 
-| STT | Service Name | Công nghệ | Port (Host:Container) | Vai trò |
-| :-- | :--- | :--- | :--- | :--- |
-| 1 | `web-frontend-server` | Nginx (HTML/Blog) | Internal (Scaled) | Cung cấp giao diện web tĩnh, bài viết blog |
-| 2 | `application-backend-server` | Python Flask | `8085:8081` | Xử lý REST API, JSON & CSDL |
-| 3 | `relational-database-server` | MariaDB 11 | `3306:3306` | CSDL quan hệ (RDBMS) |
-| 4 | `authentication-identity-server` | Keycloak | `8081:8080` | Quản lý định danh SSO, cấp phát OIDC Token |
-| 5 | `object-storage-server` | MinIO | `9000:9000`, `9001:9001` | Object Storage tương thích S3 (API & Console) |
-| 6 | `internal-dns-server` | Bind9 | `1053:53/udp` | Phân giải DNS nội bộ (`cloud.local`) |
-| 7a | `monitoring-node-exporter-server` | Node Exporter | `9100:9100` | Thu thập metrics tài nguyên container/host |
-| 7b | `monitoring-prometheus-server` | Prometheus | `9090:9090` | Lưu trữ và truy vấn metrics |
-| 8 | `monitoring-grafana-dashboard-server` | Grafana | `3000:3000` | Dashboard trực quan hóa giám sát |
-| 9 | `api-gateway-proxy-server` | Nginx Proxy | `80:80` | Điểm vào duy nhất, Routing, Round-Robin Load Balancing |
+| STT | Service Name | Loại Image | Tên Image (Docker Hub) | Port (Host:Container) | Vai trò |
+| :-- | :--- | :--- | :--- | :--- | :--- |
+| 1 | `web-frontend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Scaled) | Web tĩnh & Blog |
+| 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API |
+| 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL MariaDB |
+| 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak |
+| 5 | `object-storage-server` | **Official** | `quay.io/minio/minio` | `9000:9000`, `9001:9001` | Object Storage MinIO |
+| 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 |
+| 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics Node |
+| 7b | `monitoring-prometheus-server` | **Official** | `prom/prometheus:latest` | `9090:9090` | Thu thập & lưu trữ Metrics |
+| 8 | `monitoring-grafana-dashboard-server`| **Official** | `grafana/grafana:latest` | `3000:3000` | Dashboard Grafana |
+| 9 | `api-gateway-proxy-server` | **Custom (Dockerfile)** | `<user>/myminicloud-proxy:latest` | `80:80` | Nginx Gateway & Proxy |
 
 ---
 
@@ -25,61 +25,76 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ```text
 .
-├── app/                  # Flask Backend Server + students.json
-├── auth/                 # Authentication / Keycloak config
+├── app/                  # Custom Backend (có Dockerfile riêng)
+├── auth/                 # Keycloak identity
 ├── db/                   # MariaDB init scripts (001_init.sql, 002_studentdb.sql)
 ├── dns/                  # Bind9 DNS configs & cloud.local zone
-├── grafana/              # Grafana dashboards & provisioning
+├── grafana/              # Grafana dashboards
 ├── monitor/              # Prometheus config (prometheus.yml)
-├── proxy/                # Nginx API Gateway & Reverse Proxy (nginx.conf)
-├── storage/              # MinIO Object Storage volume data
-├── web/                  # Nginx Web Frontend (Home page & Blog)
+├── proxy/                # Custom Gateway Nginx (có Dockerfile riêng)
+├── storage/              # MinIO Object Storage volume
+├── web/                  # Custom Web Frontend (có Dockerfile riêng)
 ├── docker-compose.yml    # File điều phối toàn bộ 9 services
+├── .env.example          # File mẫu cấu hình username Docker Hub
 └── README.md
 ```
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy
+## 📦 Quy Trình Build & Push Lên Docker Hub
 
-### 1. Yêu cầu tiên quyết
-* Đã cài đặt [Docker](https://docs.docker.com/get-docker/) và Docker Compose v2.
-
-### 2. Khởi chạy cơ bản
+### Bước 1: Đăng nhập Docker Hub
 ```bash
-docker compose build --no-cache
-docker compose up -d
+docker login
 ```
 
-### 3. Dynamic Scaling (Mở rộng số lượng Web Server linh hoạt)
-Hệ thống hỗ trợ scale số lượng web frontend tức thì, Nginx Proxy sẽ tự động phát hiện và cân bằng tải (Round-Robin) qua DNS nội bộ Docker:
-```bash
-# Chạy với 2 web instances
-docker compose up -d --scale web-frontend-server=2
+### Bước 2: Thiết lập biến môi trường Username của bạn
+* **Trên Linux / EC2 / macOS**:
+  ```bash
+  export DOCKER_USER="username_dockerhub_cua_ban"
+  ```
+* **Trên Windows PowerShell**:
+  ```powershell
+  $env:DOCKER_USER="username_dockerhub_cua_ban"
+  ```
+*(Hoặc tạo file `.env` với nội dung `DOCKER_USER=username_dockerhub_cua_ban`)*
 
-# Tăng lên 4 web instances
-docker compose up -d --scale web-frontend-server=4
-```
-
-### 4. Kiểm tra trạng thái
+### Bước 3: Build và Push toàn bộ custom images
 ```bash
-docker compose ps
+# 1. Build các images tự code
+docker compose build
+
+# 2. Push lên Docker Hub
+docker compose push
 ```
 
 ---
 
-## 🧪 Kiểm Thử Nhanh (Endpoints & Testing)
+## 🚀 Triển Khai Trên Máy Mới / EC2 (Chỉ Pull và Chạy)
 
-* **Trang chủ Web**: [http://localhost](http://localhost) (hoặc qua IP EC2)
+Trên máy chủ mới (EC2) không cần build lại source code, chỉ cần tải `docker-compose.yml` (hoặc clone repo) rồi pull images về:
+
+```bash
+# Đặt username dockerhub chứa image
+export DOCKER_USER="username_dockerhub_cua_ban"
+
+# Tải tất cả image (cả official và custom từ Docker Hub)
+docker compose pull
+
+# Khởi chạy hệ thống (scale 2 web frontend)
+docker compose up -d --scale web-frontend-server=2
+```
+
+---
+
+## 🧪 Kiểm Thử Nhanh (Endpoints)
+
+* **Trang chủ Web**: [http://localhost](http://localhost) (hoặc qua IP Public EC2)
 * **Blog cá nhân**: [http://localhost/blog/](http://localhost/blog/)
 * **Backend Hello API**: [http://localhost/api/hello](http://localhost/api/hello)
-* **API Sinh viên (JSON)**: [http://localhost/student/](http://localhost/student/) hoặc [http://localhost/api/student](http://localhost/api/student)
-* **API Sinh viên (MariaDB CRUD)**: [http://localhost/api/students-db](http://localhost/api/students-db)
-* **Keycloak Admin Console**: [http://localhost:8081](http://localhost:8081) (`admin` / `admin`)
+* **API Sinh viên (JSON)**: [http://localhost/student/](http://localhost/student/)
+* **API Sinh viên (DB CRUD)**: [http://localhost/api/students-db](http://localhost/api/students-db)
+* **Keycloak Admin**: [http://localhost:8081](http://localhost:8081) (`admin` / `admin`)
 * **MinIO Console**: [http://localhost:9001](http://localhost:9001) (`minioadmin` / `minioadmin`)
-* **Prometheus Metrics**: [http://localhost:9090](http://localhost:9090)
-* **Grafana Dashboard**: [http://localhost:3000](http://localhost:3000) (`admin` / `admin`)
-* **DNS Query test**:
-  ```bash
-  dig @127.0.0.1 -p 1053 web-frontend-server.cloud.local +short
-  ```
+* **Prometheus**: [http://localhost:9090](http://localhost:9090)
+* **Grafana**: [http://localhost:3000](http://localhost:3000) (`admin` / `admin`)
