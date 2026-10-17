@@ -12,7 +12,7 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 | 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API |
 | 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL MariaDB |
 | 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak |
-| 5 | `object-storage-server` | **Official** | `quay.io/minio/minio` | `9000:9000`, `9001:9001` | Object Storage MinIO |
+| 5 | `object-storage-server` | **Official** | `chrislusf/seaweedfs:latest` | `9000:9000`, `9001:9001` | Object Storage SeaweedFS (S3 API & Web UI) |
 | 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 |
 | 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics Node |
 | 7b | `monitoring-prometheus-server` | **Official** | `prom/prometheus:latest` | `9090:9090` | Thu thập & lưu trữ Metrics |
