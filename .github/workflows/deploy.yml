@@ -49,37 +49,44 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup SSH Key & Deploy to EC2
         env:
           SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          USER: ${{ secrets.EC2_USER || 'ec2-user' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           mkdir -p ~/.ssh
 
-          # Ghi private key đảm bảo nguyên vẹn định dạng và newline kết thúc
+          # 1. Ghi private key
           printf "%s\n" "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Tránh kiểm tra fingerprint tương tác
+          # 2. Thêm host vào known_hosts
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          # Thực hiện kết nối SSH với private key chỉ định rõ (-i ~/.ssh/id_rsa)
-          ssh -i ~/.ssh/id_rsa -o ConnectTimeout=15 -o StrictHostKeyChecking=no "$USER@$HOST" << 'EOF'
+          # 3. Tạo thư mục đích trên EC2
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/myminicloud"
+
+          # 4. Tự động copy docker-compose.yml và các thư mục config sang EC2
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy storage ~/myminicloud/ 2>/dev/null || \
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy "$USER@$HOST:~/myminicloud/"
+
+          # 5. Thực hiện pull image và khởi chạy container
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" << EOF
             set -e
-            mkdir -p ~/myminicloud
             cd ~/myminicloud
 
-            # Cập nhật username Docker Hub vào .env
+            # Cấu hình user Docker Hub
             echo "DOCKER_USER=$DOCKERHUB_USERNAME" > .env
 
-            # Pull code mới nhất nếu thư mục đã có git repo
-            if [ -d .git ]; then
-              git pull origin master || git pull origin main || true
-            fi
+            # Đảm bảo docker daemon đang chạy (đặc biệt hữu ích trên Amazon Linux)
+            sudo systemctl start docker || true
 
-            # Pull images mới nhất và khởi chạy
+            # Pull images từ Docker Hub và khởi chạy
             docker compose pull
             docker compose up -d --scale web-frontend-server=2 --remove-orphans
           EOF
