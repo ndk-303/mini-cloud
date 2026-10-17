@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Computing 101 | MyMiniCloud Blog</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}
+    h1{color:#2c3e50}img{max-width:100%;border-radius:8px;margin:16px 0}
+    a{color:#3498db;text-decoration:none}a:hover{text-decoration:underline}
+    .back{display:inline-block;margin-top:24px;padding:8px 16px;background:#3498db;color:#fff;border-radius:4px}
+    table{width:100%;border-collapse:collapse;margin:16px 0}
+    th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#f4f4f4}
+  </style>
+</head>
+<body>
+  <h1>☁️ Cloud Computing 101: IaaS, PaaS, SaaS</h1>
+  <p><em>October 17, 2026</em></p>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Cloud_computing.svg" alt="Cloud Computing">
+  <p>Cloud computing delivers computing services — servers, storage, databases, networking — over the internet ("the cloud") to offer faster innovation, flexible resources, and economies of scale.</p>
+  <h2>The Three Service Models</h2>
+  <table>
+    <tr><th>Model</th><th>You Manage</th><th>Provider Manages</th><th>Example</th></tr>
+    <tr><td>IaaS</td><td>OS, Runtime, App</td><td>Hardware, Network</td><td>AWS EC2</td></tr>
+    <tr><td>PaaS</td><td>App, Data</td><td>OS, Runtime, Infra</td><td>Heroku</td></tr>
+    <tr><td>SaaS</td><td>Data only</td><td>Everything</td><td>Gmail</td></tr>
+  </table>
+  <p>MyMiniCloud simulates an IaaS-style platform: we manage 9 self-contained servers, each running a real cloud component (DNS, auth, storage, monitoring) inside Docker containers.</p>
+  <a class="back" href="/blog/">← Back to Blog</a>
+</body>
+</html>

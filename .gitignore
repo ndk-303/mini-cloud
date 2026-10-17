@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# MinIO data volume
+storage/data/*
+!storage/data/.gitkeep
+
+# Environment & local credentials
+.env
+*.pem
+*.key
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
