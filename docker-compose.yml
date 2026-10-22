@@ -9,6 +9,8 @@ services:
     image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
     container_name: web-frontend-server1
     ports: ["8080:80"]
+    volumes:
+      - ./web/html:/usr/share/nginx/html:ro
     networks:
       cloud-net:
         aliases:
@@ -24,6 +26,8 @@ services:
     build: ./web
     image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
     container_name: web-frontend-server2
+    volumes:
+      - ./web/html:/usr/share/nginx/html:ro
     networks: [cloud-net]
     restart: unless-stopped
     deploy:
