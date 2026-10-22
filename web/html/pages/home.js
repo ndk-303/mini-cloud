@@ -11,7 +11,7 @@ export async function render(container) {
         <div class="col-lg-8">
           <span class="font-mono text-muted small text-uppercase d-block mb-2">01 / LƯU TRỮ &middot; BÀI VIẾT KỸ THUẬT</span>
           <h1 class="display-4 fw-normal font-serif mb-3" style="line-height: 1.15;">
-            Chuyên san Sinh viên
+            Diễn Đàn Sinh Viên
           </h1>
           <p class="text-secondary fs-5 mb-0" style="max-width: 680px; font-weight: 400; line-height: 1.6;">
             Tuyển tập nghiên cứu khoa học, kiến trúc hạ tầng đám mây và ghi chép kỹ thuật của sinh viên.
