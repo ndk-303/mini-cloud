@@ -144,7 +144,8 @@ def secure():
     except Exception as e:
         return jsonify(error=str(e)), 401
 
-@app.get("/student")
+@app.route("/student", methods=["GET"])
+@app.route("/student/", methods=["GET"])
 def student():
     with open("students.json", encoding="utf-8") as f:
         return jsonify(json.load(f))
