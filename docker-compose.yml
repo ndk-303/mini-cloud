@@ -24,8 +24,6 @@ services:
     build: ./web
     image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
     container_name: web-frontend-server2
-    volumes:
-      - ./web/html/index2.html:/usr/share/nginx/html/index.html:ro
     networks: [cloud-net]
     restart: unless-stopped
     deploy:
@@ -84,14 +82,14 @@ services:
       KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
-      JAVA_OPTS_APPEND: "-Xms64m -Xmx300m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=128m"
+      JAVA_OPTS_APPEND: "-Xms64m -Xmx384m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
     ports: ["8081:8080"]
     restart: unless-stopped
     networks: [cloud-net]
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 600M
 
   # ── 5. Object Storage (SeaweedFS S3-Compatible Storage) ─────────────────────
   object-storage-server:

@@ -8,13 +8,8 @@ server {
   add_header X-Served-By $hostname always;
 
   location / {
-    try_files $uri $uri/ =404;
-  }
-
-  location ^~ /blog/ {
-    alias /usr/share/nginx/html/blog/;
-    index index.html;
-    autoindex off;
+    try_files $uri $uri/ /index.html;
+    add_header Cache-Control "no-cache";
   }
 
   # Endpoint phục vụ Prometheus Scrape Target UP (HTTP 200)

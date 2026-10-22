@@ -92,15 +92,40 @@ Vào **Settings** ➔ **Secrets and variables** ➔ **Actions**:
 
 ---
 
+## 🎓 Student Blog Platform & Phân Quyền 2 Tầng (Role-Based Access Control)
+
+Hệ thống đã được nâng cấp thành **Web App Blog Sinh Viên hoàn chỉnh** với trải nghiệm Single Page Application (Bootstrap 5, Responsive, Hash Routing) phân quyền rõ ràng:
+
+### 1. Phân quyền người dùng (Keycloak OIDC JWT):
+* **Admin (`admin` / `admin`)**:
+  - Toàn quyền quản lý danh sách sinh viên trực tiếp trên MariaDB (Xem, Thêm, Sửa, Xóa) tại tab **Quản lý Sinh viên** (`#admin`).
+  - Toàn quyền quản trị tất cả các bài blog (Sửa, Xóa bất kỳ bài viết nào).
+* **Sinh viên (`SV001`–`SV005` / `student123`)**:
+  - Đăng nhập trực tiếp bằng MSSV trên giao diện Web App.
+  - Đọc tất cả các bài viết blog từ cộng đồng sinh viên.
+  - Đăng bài blog của riêng mình với ảnh minh họa tự động lưu trữ lên **SeaweedFS S3 Object Storage**.
+  - Quản lý bài viết cá nhân tại tab **Blog của tôi** (`#my-blogs`) - chỉ được sửa/xóa bài của chính mình.
+* **Khách (Chưa đăng nhập)**:
+  - Xem danh sách bài viết blog công khai và đọc chi tiết bài viết.
+
+### 2. Thiết lập tự động Keycloak:
+Chạy script tự động cấu hình client `flask-app`, role `admin`, `student` và 5 tài khoản sinh viên mẫu:
+```bash
+python setup_keycloak.py
+```
+
+---
+
 ## 🧪 Danh Sách Kiểm Thử Các Dịch Vụ (Endpoints)
 
 | Dịch vụ | Đường dẫn truy cập | Kết quả kiểm thử kỳ vọng |
 | :--- | :--- | :--- |
-| **Web Home** | `http://<IP_EC2>/` | Giao diện trang chủ MyMiniCloud (Load-balanced) |
-| **Web Blog** | `http://<IP_EC2>/blog/` | Danh mục 3 bài viết kỹ thuật (Docker, Cloud, Linux) |
+| **Web App (Student Blog)** | `http://<IP_EC2>/` | Giao diện Web App Blog Sinh Viên hoàn chỉnh (SPA, Load-balanced) |
+| **Blog API (Public)** | `http://<IP_EC2>/api/blogs` | Danh sách bài blog (JSON) từ MariaDB |
+| **Upload Ảnh (S3)** | `POST http://<IP_EC2>/api/upload` | Upload ảnh lên SeaweedFS S3 (Yêu cầu JWT) |
 | **API Hello** | `http://<IP_EC2>/api/hello` | Trả về JSON `{"message": "Hello from App Server!"}` |
 | **API Sinh viên (JSON)** | `http://<IP_EC2>/student/` | Danh sách 5 sinh viên từ `students.json` |
-| **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Đọc dữ liệu từ MariaDB `studentdb` |
+| **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Quản lý sinh viên trên MariaDB `studentdb` (Yêu cầu Role `admin`) |
 | **Keycloak Admin** | `http://<IP_EC2>:8081` | Đăng nhập Admin Console (`admin` / `admin`) |
 | **SeaweedFS S3 API** | `http://<IP_EC2>:9000` | Cổng API S3 tạo Bucket & Upload File |
 | **SeaweedFS Web UI** | `http://<IP_EC2>:9001` | Trình duyệt giao diện xem Volume / File |
