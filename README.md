@@ -8,11 +8,11 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 | STT | Service Name | Loại Image | Tên Image (Docker Hub) | Port (Host:Container) | Vai trò |
 | :-- | :--- | :--- | :--- | :--- | :--- |
-| 1a | `web-frontend-server1` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | `8080:80` | Web tĩnh chính & Blog cá nhân (Cluster node 1) |
-| 1b | `web-frontend-server2` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Cluster node 2) | Web tĩnh phụ phục vụ Round-Robin Load Balancing |
-| 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API & DB Connection |
+| 1a | `web-frontend-server1` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | `8001:80` | Web tĩnh chính & Blog cá nhân (Cluster node 1) |
+| 1b | `web-frontend-server2` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | `8002:80` | Web tĩnh phụ phục vụ Round-Robin Load Balancing (Cluster node 2) |
+| 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8081:8081` | Python Flask REST API & DB Connection |
 | 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL quan hệ MariaDB |
-| 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak (OIDC Token) |
+| 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8080:8080` | SSO & Identity Keycloak (OIDC Token) |
 | 5 | `object-storage-server` | **Official** | `chrislusf/seaweedfs:latest` | `9000:9000`, `9001:9001` | Object Storage SeaweedFS (S3 API & Web UI) |
 | 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 (`cloud.local`) |
 | 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics tài nguyên Node |
@@ -126,7 +126,7 @@ python setup_keycloak.py
 | **API Hello** | `http://<IP_EC2>/api/hello` | Trả về JSON `{"message": "Hello from App Server!"}` |
 | **API Sinh viên (JSON)** | `http://<IP_EC2>/student/` | Danh sách 5 sinh viên từ `students.json` |
 | **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Quản lý sinh viên trên MariaDB `studentdb` (Yêu cầu Role `admin`) |
-| **Keycloak Admin** | `http://<IP_EC2>:8081` | Đăng nhập Admin Console (`admin` / `admin`) |
+| **Keycloak Admin** | `http://<IP_EC2>:8080` | Đăng nhập Admin Console (`admin` / `admin`) hoặc qua Proxy `http://<IP_EC2>/auth/` |
 | **SeaweedFS S3 API** | `http://<IP_EC2>:9000` | Cổng API S3 tạo Bucket & Upload File |
 | **SeaweedFS Web UI** | `http://<IP_EC2>:9001` | Trình duyệt giao diện xem Volume / File |
 | **Prometheus** | `http://<IP_EC2>:9090` | Quản lý metrics hệ thống, xem trạng thái targets UP |

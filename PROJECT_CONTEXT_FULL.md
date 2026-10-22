@@ -37,7 +37,7 @@
 │ • web-frontend-server2 (:80) │ │  server)                  │ │  identity-server)      │
 │ Nginx · Single Page App SPA  │ │ Python 3.11 · Flask REST  │ │ Keycloak 26 (Quarkus)  │
 │ Swiss Modernist Typography   │ │ Boto3 S3 · Jose JWT Auth  │ │ OIDC Provider & Roles  │
-│ Live Volume Sync for Dev     │ │ Port nội bộ: 8081         │ │ Port: 8081:8080        │
+│ Direct Ports: 8001 / 8002    │ │ Port: 8081:8081 (1:1)     │ │ Port: 8080:8080 (1:1)  │
 └──────────────────────────────┘ └─────────────┬─────────────┘ └────────────────────────┘
                                                │
                                  ┌─────────────┴─────────────┐
@@ -66,11 +66,11 @@
 
 | STT | Tên Service Container | Loại Image | Công nghệ sử dụng | Port Host:Container | Chức năng & Vai trò trong hệ thống |
 |:---:|:---|:---:|:---|:---:|:---|
-| **1a** | `web-frontend-server1` | Custom (Dockerfile) | Nginx Stable Alpine | `8080:80` | Nút chính (Node 1) cụm Web Frontend; phục vụ SPA Blog Sinh Viên, tích hợp Live Volume Mount. |
-| **1b** | `web-frontend-server2` | Custom (Dockerfile) | Nginx Stable Alpine | Nội bộ (Docker Net) | Nút phụ (Node 2) cụm Web Frontend; tham gia cân bằng tải Round-Robin. |
-| **2** | `application-backend-server` | Custom (Dockerfile) | Python 3.11 Alpine / Flask | `8085:8081` | REST API xử lý nghiệp vụ; middleware JWT Keycloak; quản lý MariaDB & upload ảnh SeaweedFS S3. |
+| **1a** | `web-frontend-server1` | Custom (Dockerfile) | Nginx Stable Alpine | `8001:80` | Nút chính (Node 1) cụm Web Frontend; phục vụ SPA Blog Sinh Viên, tích hợp Live Volume Mount. |
+| **1b** | `web-frontend-server2` | Custom (Dockerfile) | Nginx Stable Alpine | `8002:80` | Nút phụ (Node 2) cụm Web Frontend; tham gia cân bằng tải Round-Robin. |
+| **2** | `application-backend-server` | Custom (Dockerfile) | Python 3.11 Alpine / Flask | `8081:8081` | REST API xử lý nghiệp vụ; middleware JWT Keycloak; quản lý MariaDB & upload ảnh SeaweedFS S3. |
 | **3** | `relational-database-server` | Official | MariaDB 11 | `3306:3306` | Lưu trữ dữ liệu quan hệ (Database `studentdb` chứa 2 bảng `students` và `blogs`). |
-| **4** | `authentication-identity-server` | Official | Keycloak 26 (Quarkus) | `8081:8080` | Máy chủ chứng thực SSO, quản lý danh tính OIDC, cấp phát JWT token, phân quyền `admin` & `student`. |
+| **4** | `authentication-identity-server` | Official | Keycloak 26 (Quarkus) | `8080:8080` | Máy chủ chứng thực SSO, quản lý danh tính OIDC, cấp phát JWT token, phân quyền `admin` & `student`. |
 | **5** | `object-storage-server` | Official | SeaweedFS Latest | `9000:9000`<br>`9001:9001` | Lưu trữ đối tượng S3 tương thích AWS; lưu file ảnh bài viết blog (thay thế MinIO giúp tiết kiệm 70% RAM). |
 | **6** | `internal-dns-server` | Official | ISC Bind9 9.18 | `1053:53/udp` | Máy chủ DNS nội bộ, phân giải các tên miền `*.cloud.local`. |
 | **7a**| `monitoring-node-exporter-server` | Official | Prom Node Exporter | `9100:9100` | Agent thu thập chỉ số phần cứng (CPU, RAM, Disk, Network) của máy chủ host. |
@@ -218,7 +218,7 @@ Trang web được xây dựng theo kiến trúc **Single Page Application (SPA)
    - Tự động đóng gói và build đồng thời 3 custom images (`web`, `app`, `proxy`) đẩy lên Docker Hub.
    - Tự động SSH vào máy chủ AWS EC2, đồng bộ cấu hình, pull image mới và kích hoạt `docker compose up -d` không gián đoạn dịch vụ.
 4. **Hạ Tầng Giám Sát Metrics Thời Gian Thực (Full Observability Stack)**:
-   - **Prometheus**: Định kỳ scrape metrics từ Node Exporter (`:9100`), Flask App (`:8085`), và Nginx (`/metrics`).
+   - **Prometheus**: Định kỳ scrape metrics từ Node Exporter (`:9100`), Flask App (`:8081`), và Nginx (`/metrics`).
    - **Grafana**: Tự động liên kết nguồn dữ liệu Prometheus (Datasource Provisioning), trực quan hóa biểu đồ tải hệ thống (CPU, RAM, Lưu lượng mạng).
 5. **Máy Chủ DNS Nội Bộ (Bind9)**:
    - Cung cấp phân giải tên miền riêng cho vùng mạng `cloud.local`, cho phép các service trong mạng nội bộ liên lạc với nhau qua tên miền thay vì IP tĩnh.
@@ -235,7 +235,7 @@ Trang web được xây dựng theo kiến trúc **Single Page Application (SPA)
 | **Sinh viên 1** | `SV001` | `student123` | `student` | Viết bài, upload ảnh, sửa/xóa bài của `SV001`. Không được sửa bài khác. |
 | **Sinh viên 2** | `SV002` | `student123` | `student` | Tương tự cho sinh viên `SV002`. |
 | **Sinh viên 3, 4, 5** | `SV003`, `SV004`, `SV005` | `student123` | `student` | Tương tự cho các sinh viên tiếp theo. |
-| **Keycloak Console** | `admin` | `admin` | Keycloak Master Admin | Quản trị Identity Server tại `http://<IP>:8081`. |
+| **Keycloak Console** | `admin` | `admin` | Keycloak Master Admin | Quản trị Identity Server tại `http://<IP>:8080` (hoặc qua Proxy `http://<IP>/auth/`). |
 | **Grafana Dashboard** | `admin` | `admin` | Grafana Admin | Xem Dashboard giám sát tại `http://<IP>:3000`. |
 | **MariaDB Root** | `root` | `root` | Database Superuser | Quản lý database `studentdb` trên port `3306`. |
 
