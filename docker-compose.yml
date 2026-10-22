@@ -84,7 +84,7 @@ services:
       KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
-      JAVA_OPTS_APPEND: "-Xms64m -Xmx300m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
+      JAVA_OPTS_APPEND: "-Xms64m -Xmx300m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=128m"
     ports: ["8081:8080"]
     restart: unless-stopped
     networks: [cloud-net]
