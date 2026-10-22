@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - MyMiniCloud
+name: CI/CD Pipeline - MiniCloud
 
 on:
   push:
@@ -27,21 +27,21 @@ jobs:
         with:
           context: ./web
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-web:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/minicloud-web:latest
 
       - name: Build and Push Backend App Image
         uses: docker/build-push-action@v5
         with:
           context: ./app
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-app:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/minicloud-app:latest
 
       - name: Build and Push API Gateway Proxy Image
         uses: docker/build-push-action@v5
         with:
           context: ./proxy
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myminicloud-proxy:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/minicloud-proxy:latest
 
 
   # ── JOB 2: DEPLOY TO AWS EC2 ────────────────────────────────────────────────
@@ -70,11 +70,11 @@ jobs:
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
           # 3. Tạo thư mục đích trên EC2 và ghi file .env
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/myminicloud && echo 'DOCKER_USER=$DOCKERHUB_USER' > ~/myminicloud/.env"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/minicloud && echo 'DOCKER_USER=$DOCKERHUB_USER' > ~/minicloud/.env"
 
           # 4. Tự động copy docker-compose.yml và các thư mục config/volume sang EC2
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy storage "$USER@$HOST:~/myminicloud/" 2>/dev/null || \
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy "$USER@$HOST:~/myminicloud/"
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy storage "$USER@$HOST:~/minicloud/" 2>/dev/null || \
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy "$USER@$HOST:~/minicloud/"
 
           # 5. Thực hiện pull image và khởi chạy toàn bộ 9 servers (bao gồm Round-Robin cluster)
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/myminicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --remove-orphans"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/minicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --remove-orphans"

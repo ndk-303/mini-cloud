@@ -3,31 +3,35 @@ networks:
     name: cloud-net
 
 services:
-  # ── 1a. Web Frontend Instance 1 (Primary, Port 8080) ────────────────────────
+  # ── 1a. Web Frontend Instance 1 (Cluster Node 1, Direct Port 8001) ──────────
   web-frontend-server1:
     build: ./web
-    image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
+    image: ${DOCKER_USER:-hotensv}/minicloud-web:latest
     container_name: web-frontend-server1
-    ports: ["8080:80"]
+    ports: ["8001:80"]
     volumes:
       - ./web/html:/usr/share/nginx/html:ro
+      - ./web/conf.default:/etc/nginx/conf.d/default.conf:ro
     networks:
       cloud-net:
         aliases:
           - web-frontend-server
+          - web
     restart: unless-stopped
     deploy:
       resources:
         limits:
           memory: 64M
 
-  # ── 1b. Web Frontend Instance 2 (Load Balancing Cluster) ───────────────────
+  # ── 1b. Web Frontend Instance 2 (Cluster Node 2, Direct Port 8002) ──────────
   web-frontend-server2:
     build: ./web
-    image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
+    image: ${DOCKER_USER:-hotensv}/minicloud-web:latest
     container_name: web-frontend-server2
+    ports: ["8002:80"]
     volumes:
       - ./web/html:/usr/share/nginx/html:ro
+      - ./web/conf.default:/etc/nginx/conf.d/default.conf:ro
     networks: [cloud-net]
     restart: unless-stopped
     deploy:
@@ -35,13 +39,17 @@ services:
         limits:
           memory: 64M
 
-  # ── 2. Application Backend (Custom Image) ───────────────────────────────────
+  # ── 2. Application Backend (Custom Image, 1:1 Port 8081) ────────────────────
   application-backend-server:
     build: ./app
-    image: ${DOCKER_USER:-hotensv}/myminicloud-app:latest
+    image: ${DOCKER_USER:-hotensv}/minicloud-app:latest
     container_name: application-backend-server
-    networks: [cloud-net]
-    ports: ["8085:8081"]
+    networks:
+      cloud-net:
+        aliases:
+          - app-server
+          - app
+    ports: ["8081:8081"]
     environment:
       OIDC_ISSUER: "http://authentication-identity-server:8080/realms/master"
       OIDC_AUDIENCE: "myapp"
@@ -68,7 +76,10 @@ services:
     volumes:
       - ./db/init:/docker-entrypoint-initdb.d:ro
     ports: ["3306:3306"]
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - db
     restart: unless-stopped
     deploy:
       resources:
@@ -87,9 +98,12 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
       JAVA_OPTS_APPEND: "-Xms64m -Xmx384m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
-    ports: ["8081:8080"]
+    ports: ["8080:8080"]
     restart: unless-stopped
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - keycloak
     deploy:
       resources:
         limits:
@@ -103,7 +117,10 @@ services:
     volumes:
       - ./storage/data:/data
     ports: ["9000:9000", "9001:9001"]
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - minio
     restart: unless-stopped
     deploy:
       resources:
@@ -116,10 +133,14 @@ services:
     container_name: internal-dns-server
     ports: ["1053:53/udp"]
     volumes:
+      - ./dns/named.conf:/etc/bind/named.conf:ro
       - ./dns/named.conf.options:/etc/bind/named.conf.options:ro
       - ./dns/named.conf.local:/etc/bind/named.conf.local:ro
       - ./dns/db.cloud.local:/etc/bind/db.cloud.local:ro
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - dns-server
     restart: unless-stopped
     deploy:
       resources:
@@ -131,7 +152,10 @@ services:
     image: prom/node-exporter:latest
     container_name: monitoring-node-exporter-server
     ports: ["9100:9100"]
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - node-exporter
     restart: unless-stopped
     deploy:
       resources:
@@ -151,7 +175,10 @@ services:
     ports: ["9090:9090"]
     volumes:
       - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - prometheus
     restart: unless-stopped
     deploy:
       resources:
@@ -165,7 +192,10 @@ services:
     ports: ["3000:3000"]
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - grafana
     restart: unless-stopped
     deploy:
       resources:
@@ -175,7 +205,7 @@ services:
   # ── 9. API Gateway / Reverse Proxy (Custom Image hoặc Official) ─────────────
   api-gateway-proxy-server:
     build: ./proxy
-    image: ${DOCKER_USER:-hotensv}/myminicloud-proxy:latest
+    image: ${DOCKER_USER:-hotensv}/minicloud-proxy:latest
     container_name: api-gateway-proxy-server
     depends_on:
       - web-frontend-server1

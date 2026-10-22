@@ -1,6 +1,6 @@
 import requests, sys
 
-BASE = "http://localhost:8081"
+BASE = "http://localhost:8080"
 
 # 1. Login as admin
 print("Logging in to Keycloak master realm...")
