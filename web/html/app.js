@@ -12,24 +12,34 @@ export function renderNav() {
   const navAuth  = document.getElementById('nav-auth');
   if (!navLinks || !navAuth) return;
 
-  let linksHtml = `<li class="nav-item"><a class="nav-link" href="#home">Trang chủ Blog</a></li>`;
+  const currentHash = window.location.hash || '#home';
+  const currentPage = currentHash.replace('#', '').split('/')[0];
+
+  let linksHtml = `
+    <a class="nav-editorial-link ${currentPage === 'home' || !currentPage ? 'active' : ''}" href="#home">Articles</a>
+  `;
+
   if (auth) {
-    linksHtml += `<li class="nav-item"><a class="nav-link" href="#my-blogs">Blog của tôi</a></li>`;
+    linksHtml += `
+      <a class="nav-editorial-link ${currentPage === 'my-blogs' ? 'active' : ''}" href="#my-blogs">My Writings</a>
+    `;
     if (auth.role === 'admin') {
-      linksHtml += `<li class="nav-item"><a class="nav-link text-warning fw-bold" href="#admin">Quản lý Sinh viên</a></li>`;
+      linksHtml += `
+        <a class="nav-editorial-link text-danger ${currentPage === 'admin' ? 'active' : ''}" href="#admin">Students Ledger</a>
+      `;
     }
   }
   navLinks.innerHTML = linksHtml;
 
   if (auth) {
-    const roleBadge = auth.role === 'admin' 
-      ? '<span class="badge bg-danger me-2">ADMIN</span>' 
-      : '<span class="badge bg-primary me-2">SINH VIÊN</span>';
+    const roleClass = auth.role === 'admin' ? 'admin' : 'student';
     navAuth.innerHTML = `
-      <div class="d-flex align-items-center">
-        ${roleBadge}
-        <span class="navbar-text me-3 fw-semibold text-light">${auth.username}</span>
-        <button class="btn btn-outline-light btn-sm" id="btn-logout">Đăng xuất</button>
+      <div class="d-flex align-items-center gap-2">
+        <span class="role-badge ${roleClass}">${auth.role}</span>
+        <span class="font-mono small fw-semibold text-dark">${auth.username}</span>
+        <button class="btn btn-modern-outline btn-modern-sm" id="btn-logout" title="Đăng xuất">
+          Logout
+        </button>
       </div>
     `;
     document.getElementById('btn-logout')?.addEventListener('click', () => {
@@ -40,8 +50,8 @@ export function renderNav() {
     });
   } else {
     navAuth.innerHTML = `
-      <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">
-        Đăng nhập
+      <button class="btn btn-modern-primary btn-modern-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+        Sign In
       </button>
     `;
   }
@@ -56,7 +66,7 @@ async function handleLogin(e) {
 
   errEl.classList.add('d-none');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Đang đăng nhập...';
+  submitBtn.textContent = 'AUTHENTICATING...';
 
   try {
     const auth = await login(username, password);
@@ -68,11 +78,11 @@ async function handleLogin(e) {
     document.getElementById('login-form').reset();
     navigate(auth.role === 'admin' ? '#admin' : '#home');
   } catch (err) {
-    errEl.textContent = err.message || 'Sai tên đăng nhập hoặc mật khẩu.';
+    errEl.textContent = err.message || 'Xác thực thất bại. Vui lòng kiểm tra lại MSSV hoặc mật khẩu.';
     errEl.classList.remove('d-none');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Đăng nhập';
+    submitBtn.textContent = 'XÁC THỰC & ĐĂNG NHẬP';
   }
 }
 
@@ -98,7 +108,7 @@ export async function route() {
       return;
     }
     if (guards[page] === 'admin' && auth.role !== 'admin') {
-      alert('Bạn không có quyền truy cập trang quản trị!');
+      alert('Chức năng này yêu cầu quyền Quản trị viên (Admin).');
       navigate('#home');
       return;
     }
@@ -114,17 +124,22 @@ export async function route() {
 
   const loader = modules[page] ?? modules['home'];
   try {
-    appEl.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
+    appEl.innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
+        <div class="mt-2 font-mono small text-muted">LOADING VIEW...</div>
+      </div>
+    `;
     const mod = await loader();
     appEl.innerHTML = '';
     await mod.render(appEl, param);
   } catch (error) {
     console.error('Routing error:', error);
     appEl.innerHTML = `
-      <div class="alert alert-danger my-4">
-        <h4>Lỗi tải trang</h4>
-        <p>${error.message}</p>
-        <button class="btn btn-primary" onclick="window.location.hash='#home'">Về trang chủ</button>
+      <div class="py-5 text-center">
+        <h2 class="h4 font-serif text-danger mb-2">Error Loading View</h2>
+        <p class="text-muted font-mono small">${error.message}</p>
+        <button class="btn btn-modern-outline btn-modern-sm mt-3" onclick="window.location.hash='#home'">Return to Archive</button>
       </div>
     `;
   }

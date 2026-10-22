@@ -11,55 +11,68 @@ export async function render(container, id) {
   const isEdit = Boolean(id);
 
   container.innerHTML = `
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <div class="card p-4 p-md-5 shadow-sm border-0 bg-white">
-          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-            <h3 class="fw-bold mb-0">
-              <i class="bi ${isEdit ? 'bi-pencil-square' : 'bi-plus-circle'} text-primary me-2"></i>
-              ${isEdit ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}
-            </h3>
-            <span class="badge bg-light text-dark border">Tác giả: <strong>${auth.username}</strong></span>
+    <div class="py-3 py-md-4">
+      <div class="mx-auto" style="max-width: 820px;">
+        <!-- Top Action Bar -->
+        <div class="mb-4 pb-3 border-b-hairline d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-link p-0 text-dark font-mono small text-decoration-none" id="btn-cancel">
+            &larr; CANCEL DRAFT
+          </button>
+          <div class="d-flex align-items-center gap-2">
+            <span class="font-mono small text-muted">AUTHOR: <strong class="text-dark">${auth.username}</strong></span>
+          </div>
+        </div>
+
+        <div class="alert alert-danger d-none font-mono small rounded-0" id="form-error"></div>
+
+        <form id="blog-form">
+          <!-- Draft Title -->
+          <div class="mb-4">
+            <label class="font-mono small text-muted text-uppercase d-block mb-1">01 / ARTICLE TITLE</label>
+            <input type="text" class="form-control form-control-lg font-serif border-0 px-0 shadow-none" 
+                   id="blog-title" placeholder="Enter title of your monograph..." 
+                   style="font-size: 2.2rem; border-bottom: 1px solid var(--border) !important; background: transparent; border-radius: 0;" required>
           </div>
 
-          <div class="alert alert-danger d-none" id="form-error"></div>
-
-          <form id="blog-form">
-            <div class="mb-3">
-              <label class="form-label fw-semibold" for="blog-title">Tiêu đề bài viết <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-lg" id="blog-title" placeholder="Nhập tiêu đề hấp dẫn..." required>
+          <!-- Feature Image Uploader -->
+          <div class="mb-4 p-3 border-hairline" style="background: var(--bg-alt); border: 1px dashed var(--border);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">02 / S3 OBJECT STORAGE ATTACHMENT</span>
+              <span class="font-mono small text-muted">SEAWEEDFS COMPATIBLE</span>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-semibold" for="blog-content">Nội dung bài viết <span class="text-danger">*</span></label>
-              <textarea class="form-control" id="blog-content" rows="9" placeholder="Viết nội dung bài viết của bạn tại đây..." required></textarea>
+            
+            <input type="file" class="form-control form-control-sm font-mono" id="blog-image" accept="image/*">
+            <div class="form-text font-mono small text-muted">Supports JPG, PNG, WEBP, GIF. Uploaded directly to S3 cluster.</div>
+            
+            <div id="image-preview-wrapper" class="mt-3 d-none">
+              <span class="font-mono small text-muted d-block mb-1">CURRENT ATTACHMENT PREVIEW:</span>
+              <img id="image-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="img-fluid" style="max-height: 240px; border: 1px solid var(--border);" alt="Attachment Preview">
             </div>
+          </div>
 
-            <div class="mb-4">
-              <label class="form-label fw-semibold" for="blog-image">Ảnh minh họa (Upload lên SeaweedFS S3)</label>
-              <input type="file" class="form-control" id="blog-image" accept="image/*">
-              <div class="form-text">Hỗ trợ các định dạng PNG, JPG, JPEG, GIF. Tối đa 5MB.</div>
-              <div id="image-preview-wrapper" class="mt-3 d-none">
-                <span class="small text-muted d-block mb-1">Xem trước ảnh:</span>
-                <img id="image-preview" src="" class="img-thumbnail" style="max-height: 220px; object-fit: cover;" alt="Preview">
-              </div>
-            </div>
+          <!-- Draft Body -->
+          <div class="mb-4">
+            <label class="font-mono small text-muted text-uppercase d-block mb-1">03 / MONOGRAPH BODY CONTENT</label>
+            <textarea class="form-control border-hairline p-3 font-sans" id="blog-content" rows="14" 
+                      placeholder="Begin typing your research, notes, or analysis..." 
+                      style="font-size: 1.05rem; line-height: 1.7; background: #FFFFFF; resize: vertical;" required></textarea>
+          </div>
 
-            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-              <button type="button" class="btn btn-outline-secondary px-4" id="btn-cancel">Hủy</button>
-              <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btn-submit">
-                <i class="bi bi-send me-1"></i>${isEdit ? 'Lưu thay đổi' : 'Đăng bài viết'}
-              </button>
-            </div>
-          </form>
-        </div>
+          <!-- Submit Buttons -->
+          <div class="pt-4 border-t-hairline d-flex justify-content-end gap-3">
+            <button type="button" class="btn btn-modern-outline" id="btn-cancel-bottom">Cancel</button>
+            <button type="submit" class="btn btn-modern-primary" id="btn-submit">
+              ${isEdit ? 'Save Changes' : 'Publish to Archive &rarr;'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   `;
 
-  document.getElementById('btn-cancel')?.addEventListener('click', () => {
-    navigate('#my-blogs');
-  });
+  const cancelAction = () => navigate('#my-blogs');
+  document.getElementById('btn-cancel')?.addEventListener('click', cancelAction);
+  document.getElementById('btn-cancel-bottom')?.addEventListener('click', cancelAction);
 
   const fileInput = document.getElementById('blog-image');
   const previewWrapper = document.getElementById('image-preview-wrapper');
@@ -95,7 +108,7 @@ export async function render(container, id) {
         }
       }
     } catch (e) {
-      console.error('Failed to load blog for editing:', e);
+      console.error('Failed to pre-populate blog draft:', e);
     }
   }
 
@@ -108,23 +121,23 @@ export async function render(container, id) {
 
     errEl.classList.add('d-none');
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Đang xử lý...';
+    submitBtn.textContent = 'TRANSMITTING...';
 
     try {
       let finalImageUrl = existingImageUrl;
       const file = fileInput.files[0];
 
       if (file) {
-        submitBtn.textContent = 'Đang tải ảnh lên SeaweedFS...';
+        submitBtn.textContent = 'UPLOADING TO S3...';
         const uploadRes = await uploadFile(file);
         if (uploadRes.url) {
           finalImageUrl = uploadRes.url;
         } else if (uploadRes.error) {
-          throw new Error('Lỗi upload ảnh: ' + uploadRes.error);
+          throw new Error('S3 Upload Failed: ' + uploadRes.error);
         }
       }
 
-      submitBtn.textContent = isEdit ? 'Đang cập nhật bài...' : 'Đang lưu bài...';
+      submitBtn.textContent = isEdit ? 'UPDATING...' : 'PUBLISHING...';
 
       const payload = {
         title,
@@ -142,16 +155,16 @@ export async function render(container, id) {
 
       if (!saveRes.ok) {
         const err = await saveRes.json();
-        throw new Error(err.error || 'Lưu bài thất bại.');
+        throw new Error(err.error || 'Failed to save monograph.');
       }
 
       navigate('#my-blogs');
 
     } catch (err) {
-      errEl.textContent = err.message || 'Có lỗi xảy ra.';
+      errEl.textContent = err.message || 'Error occurred while saving.';
       errEl.classList.remove('d-none');
       submitBtn.disabled = false;
-      submitBtn.textContent = isEdit ? 'Lưu thay đổi' : 'Đăng bài viết';
+      submitBtn.textContent = isEdit ? 'Save Changes' : 'Publish to Archive →';
     }
   });
 }

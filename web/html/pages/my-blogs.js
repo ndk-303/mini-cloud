@@ -9,36 +9,43 @@ export async function render(container) {
   }
 
   container.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-      <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-collection text-primary me-2"></i>Quản lý bài viết của tôi</h2>
-        <p class="text-muted small mb-0">Tài khoản: <strong>${auth.username}</strong> (${auth.role === 'admin' ? 'Quản trị viên' : 'Sinh viên'})</p>
+    <div class="py-3 py-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pb-3 border-b-hairline gap-3">
+        <div>
+          <span class="font-mono text-muted small text-uppercase d-block mb-1">02 / PERSONAL RECORD</span>
+          <h2 class="display-6 font-serif mb-1">My Writings</h2>
+          <p class="text-secondary small font-mono mb-0">
+            Author: <strong class="text-dark">${auth.username}</strong> &middot; Role: <strong>${auth.role.toUpperCase()}</strong>
+          </p>
+        </div>
+        <button class="btn btn-modern-primary" id="btn-create-my-blog">
+          Write New Monograph &rarr;
+        </button>
       </div>
-      <button class="btn btn-primary fw-semibold" id="btn-create-my-blog">
-        <i class="bi bi-pencil-square me-1"></i>Viết bài mới
-      </button>
-    </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th scope="col" style="width: 70px;">Ảnh</th>
-              <th scope="col">Tiêu đề bài viết</th>
-              <th scope="col" style="width: 130px;">Tác giả</th>
-              <th scope="col" style="width: 170px;">Ngày đăng</th>
-              <th scope="col" class="text-end" style="width: 180px;">Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="my-blogs-tbody">
-            <tr>
-              <td colspan="5" class="text-center py-4">
-                <div class="spinner-border spinner-border-sm text-primary"></div> Đang tải...
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Ledger Table -->
+      <div class="border-t-hairline border-b-hairline">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" style="background: transparent;">
+            <thead>
+              <tr class="font-mono small text-muted border-b-hairline">
+                <th scope="col" style="width: 60px; font-weight: 500;">NO.</th>
+                <th scope="col" style="font-weight: 500;">MONOGRAPH TITLE</th>
+                <th scope="col" style="width: 140px; font-weight: 500;">AUTHOR</th>
+                <th scope="col" style="width: 180px; font-weight: 500;">PUBLISHED</th>
+                <th scope="col" class="text-end" style="width: 160px; font-weight: 500;">OPERATIONS</th>
+              </tr>
+            </thead>
+            <tbody id="my-blogs-tbody">
+              <tr>
+                <td colspan="5" class="text-center py-5">
+                  <div class="spinner-border spinner-border-sm text-dark"></div>
+                  <div class="mt-2 font-mono small text-muted">LOADING WRITINGS...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `;
@@ -52,7 +59,6 @@ export async function render(container) {
     const blogs = await res.json();
     const tbody = document.getElementById('my-blogs-tbody');
 
-    // Lọc theo author_id nếu là sinh viên; nếu admin thì hiển thị tất cả bài
     const myBlogs = auth.role === 'admin' 
       ? blogs 
       : blogs.filter(b => (b.author_id || '').toUpperCase() === auth.username.toUpperCase());
@@ -60,38 +66,37 @@ export async function render(container) {
     if (!myBlogs || myBlogs.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center py-5 text-muted">
-            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-            Bạn chưa đăng bài viết nào. Hãy bấm <strong>Viết bài mới</strong> để bắt đầu!
+          <td colspan="5" class="text-center py-5">
+            <p class="font-serif fs-5 text-muted mb-2">No personal publications found in archive.</p>
+            <p class="font-mono small text-secondary">Click the button above to begin writing your first entry.</p>
           </td>
         </tr>
       `;
       return;
     }
 
-    tbody.innerHTML = myBlogs.map(blog => {
-      const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN', {
-        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-      }) : '-';
-
-      const thumb = blog.image_url 
-        ? `<img src="${blog.image_url}" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">`
-        : `<div class="bg-light text-primary rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;"><i class="bi bi-file-text"></i></div>`;
+    tbody.innerHTML = myBlogs.map((blog, idx) => {
+      const num = String(idx + 1).padStart(2, '0');
+      const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      }).toUpperCase() : 'RECENT';
 
       return `
-        <tr>
-          <td>${thumb}</td>
+        <tr class="border-b-hairline">
+          <td class="font-mono text-muted small">${num}</td>
           <td>
-            <a href="#blog/${blog.id}" class="fw-semibold text-dark text-decoration-none hover-primary">${blog.title}</a>
+            <a href="#blog/${blog.id}" class="text-dark fw-semibold text-decoration-none font-serif fs-5 d-block" style="line-height: 1.3;">
+              ${blog.title}
+            </a>
           </td>
-          <td><span class="badge bg-secondary-subtle text-secondary-emphasis">${blog.author_id}</span></td>
-          <td class="small text-muted">${dateStr}</td>
+          <td class="font-mono small text-muted">${blog.author_id}</td>
+          <td class="font-mono small text-muted">${dateStr}</td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-primary me-1" data-action="edit" data-id="${blog.id}" title="Sửa bài">
-              <i class="bi bi-pencil"></i>
+            <button class="btn btn-link text-dark font-mono small text-decoration-none p-0 me-3" data-action="edit" data-id="${blog.id}">
+              Edit
             </button>
-            <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${blog.id}" title="Xóa bài">
-              <i class="bi bi-trash"></i>
+            <button class="btn btn-link text-danger font-mono small text-decoration-none p-0" data-action="delete" data-id="${blog.id}">
+              Delete
             </button>
           </td>
         </tr>
@@ -107,13 +112,13 @@ export async function render(container) {
     tbody.querySelectorAll('button[data-action="delete"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const bid = btn.getAttribute('data-id');
-        if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
+        if (!confirm('Xác nhận xóa bài viết này khỏi archive?')) return;
         const delRes = await apiFetch(`/blogs/${bid}`, { method: 'DELETE' });
         if (delRes.ok) {
           render(container);
         } else {
           const err = await delRes.json();
-          alert('Không thể xóa bài viết: ' + (err.error || 'Lỗi'));
+          alert('Lỗi xóa bài: ' + (err.error || 'Lỗi'));
         }
       });
     });
@@ -123,7 +128,7 @@ export async function render(container) {
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center py-4 text-danger">Lỗi tải dữ liệu: ${err.message}</td>
+          <td colspan="5" class="text-center py-4 text-danger font-mono small">ERROR: ${err.message}</td>
         </tr>
       `;
     }
