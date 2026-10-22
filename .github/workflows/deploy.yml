@@ -57,7 +57,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER || 'ec2-user' }}
+          USER: ${{ secrets.EC2_USER || 'ubuntu' }}
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           mkdir -p ~/.ssh
@@ -72,9 +72,9 @@ jobs:
           # 3. Tạo thư mục đích trên EC2 và ghi file .env
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/myminicloud && echo 'DOCKER_USER=$DOCKERHUB_USER' > ~/myminicloud/.env"
 
-          # 4. Tự động copy docker-compose.yml và các thư mục config sang EC2
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy storage "$USER@$HOST:~/myminicloud/" 2>/dev/null || \
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml db dns monitor proxy "$USER@$HOST:~/myminicloud/"
+          # 4. Tự động copy docker-compose.yml và các thư mục config/volume sang EC2
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy storage "$USER@$HOST:~/myminicloud/" 2>/dev/null || \
+          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy "$USER@$HOST:~/myminicloud/"
 
-          # 5. Thực hiện pull image và khởi chạy container
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/myminicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --scale web-frontend-server=2 --remove-orphans"
+          # 5. Thực hiện pull image và khởi chạy toàn bộ 9 servers (bao gồm Round-Robin cluster)
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/myminicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --remove-orphans"

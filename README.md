@@ -8,7 +8,8 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 | STT | Service Name | Loại Image | Tên Image (Docker Hub) | Port (Host:Container) | Vai trò |
 | :-- | :--- | :--- | :--- | :--- | :--- |
-| 1 | `web-frontend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Dynamic Scaled) | Web tĩnh & Blog cá nhân (Round-Robin) |
+| 1a | `web-frontend-server1` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | `8080:80` | Web tĩnh chính & Blog cá nhân (Cluster node 1) |
+| 1b | `web-frontend-server2` | **Custom (Dockerfile)** | `<user>/myminicloud-web:latest` | Internal (Cluster node 2) | Web tĩnh phụ phục vụ Round-Robin Load Balancing |
 | 2 | `application-backend-server` | **Custom (Dockerfile)** | `<user>/myminicloud-app:latest` | `8085:8081` | Python Flask REST API & DB Connection |
 | 3 | `relational-database-server` | **Official** | `mariadb:11` | `3306:3306` | CSDL quan hệ MariaDB |
 | 4 | `authentication-identity-server` | **Official** | `quay.io/keycloak/keycloak:latest` | `8081:8080` | SSO & Identity Keycloak (OIDC Token) |
@@ -16,8 +17,8 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 | 6 | `internal-dns-server` | **Official** | `internetsystemsconsortium/bind9:9.18`| `1053:53/udp` | Internal DNS Bind9 (`cloud.local`) |
 | 7a | `monitoring-node-exporter-server` | **Official** | `prom/node-exporter:latest` | `9100:9100` | Thu thập metrics tài nguyên Node |
 | 7b | `monitoring-prometheus-server` | **Official** | `prom/prometheus:latest` | `9090:9090` | Thu thập & lưu trữ Metrics hệ thống |
-| 8 | `monitoring-grafana-dashboard-server`| **Official** | `grafana/grafana:latest` | `3000:3000` | Dashboard trực quan hóa Grafana |
-| 9 | `api-gateway-proxy-server` | **Custom (Dockerfile)** | `<user>/myminicloud-proxy:latest` | `80:80` | Nginx Gateway, Routing & Load Balancing |
+| 8 | `monitoring-grafana-dashboard-server`| **Official** | `grafana/grafana:latest` | `3000:3000` | Dashboard trực quan hóa Grafana (Auto-provisioned) |
+| 9 | `api-gateway-proxy-server` | **Custom (Dockerfile)** | `<user>/myminicloud-proxy:latest` | `80:80` | Nginx Gateway, Routing & Round-Robin Load Balancing |
 
 ---
 

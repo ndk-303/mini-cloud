@@ -18,3 +18,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Course report files
+Báo Cáo Cuối Kỳ.md
+BAO_CAO_CUOI_KY_HOAN_CHINH.md
+docs/
+
