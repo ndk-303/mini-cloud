@@ -5,6 +5,8 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
+  add_header X-Served-By $hostname always;
+
   location / {
     try_files $uri $uri/ =404;
   }
@@ -13,5 +15,11 @@ server {
     alias /usr/share/nginx/html/blog/;
     index index.html;
     autoindex off;
+  }
+
+  # Endpoint phục vụ Prometheus Scrape Target UP (HTTP 200)
+  location /metrics {
+    stub_status;
+    access_log off;
   }
 }
