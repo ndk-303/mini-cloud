@@ -184,8 +184,8 @@ def students_db_create():
                 "INSERT INTO students (student_id, fullname, dob, major) VALUES (%s, %s, %s, %s)",
                 (data["student_id"], data["fullname"], data["dob"], data["major"])
             )
+            new_id = cur.lastrowid
         conn.commit()
-        new_id = conn.insert_id()
     return jsonify(id=new_id, student_id=data["student_id"]), 201
 
 @app.put("/students-db/<int:sid>")
@@ -254,8 +254,8 @@ def blogs_create():
                 "INSERT INTO blogs (title, content, author_id, image_url) VALUES (%s, %s, %s, %s)",
                 (data["title"], data["content"], author_id, data.get("image_url"))
             )
+            new_id = cur.lastrowid
         conn.commit()
-        new_id = conn.insert_id()
     return jsonify(id=new_id, title=data["title"], author_id=author_id), 201
 
 @app.put("/blogs/<int:bid>")
@@ -269,8 +269,9 @@ def blogs_update(bid):
         return jsonify(error="Not found"), 404
     payload = g.token_payload
     roles = payload.get("realm_access", {}).get("roles", [])
-    username = payload.get("preferred_username")
-    if row["author_id"] != username and "admin" not in roles:
+    username = (payload.get("preferred_username") or "").lower()
+    author_id = (row["author_id"] or "").lower()
+    if author_id != username and "admin" not in roles:
         return jsonify(error="Forbidden"), 403
     data = request.get_json(force=True)
     valid = {k: v for k, v in data.items() if k in ("title", "content", "image_url")}
@@ -294,8 +295,9 @@ def blogs_delete(bid):
         return jsonify(error="Not found"), 404
     payload = g.token_payload
     roles = payload.get("realm_access", {}).get("roles", [])
-    username = payload.get("preferred_username")
-    if row["author_id"] != username and "admin" not in roles:
+    username = (payload.get("preferred_username") or "").lower()
+    author_id = (row["author_id"] or "").lower()
+    if author_id != username and "admin" not in roles:
         return jsonify(error="Forbidden"), 403
     with get_db() as conn:
         with conn.cursor() as cur:
