@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docker Deep Dive - MiniCloud Blog</title>
+
+  <!-- Typography: Newsreader + Albert Sans + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
+    rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/modernist.css">
+</head>
+
+<body>
+
+  <!-- Masthead -->
+  <header class="masthead py-3">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <a class="masthead-brand" href="/">
+          <span>BLOG SINH VIÊN</span>
+        </a>
+        <span class="masthead-tag">BÀI VIẾT 01</span>
+      </div>
+
+      <nav class="d-flex align-items-center gap-2">
+        <a class="nav-editorial-link" href="/blog/">← Danh Mục Blog</a>
+        <a class="nav-editorial-link" href="/">Trang Chủ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Article Container -->
+  <main class="container my-4 my-md-5 flex-grow-1" style="max-width: 860px;">
+    <!-- Article Header -->
+    <header class="mb-4 pb-3 border-b-hairline">
+      <div class="article-meta mb-2">
+        <span class="text-uppercase fw-semibold text-dark">01 / CONTAINERIZATION</span>
+        <span class="mx-2">&middot;</span>
+        <span>22/10/2026</span>
+        <span class="mx-2">&middot;</span>
+        <span>5 PHÚT ĐỌC</span>
+        <span class="mx-2">&middot;</span>
+        <span>TÁC GIẢ: SV001</span>
+      </div>
+      <h1 class="display-5 font-serif mb-3" style="line-height: 1.2;">
+        Docker Deep Dive: Công nghệ Container hóa
+      </h1>
+      <p class="text-muted font-mono small mb-0">
+        NGHIÊN CỨU NỀN TẢNG CỐT LÕI CỦA CÔNG NGHỆ CÔ LẬP TIẾN TRÌNH TRÊN LINUX KERNEL
+      </p>
+    </header>
+
+    <!-- Featured Image -->
+    <div class="article-img-frame mb-4">
+      <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=1200&auto=format&fit=crop&q=80" alt="Docker Deep Dive Containers" style="height: auto; max-height: 440px;">
+    </div>
+    <div class="font-mono text-muted small text-center mb-4">
+      HÌNH 1.1: MÔ HÌNH ĐÓNG GÓI ỨNG DỤNG VÀ THƯ VIỆN ĐỘC LẬP BẰNG CONTAINER
+    </div>
+
+    <!-- Article Content -->
+    <article class="article-body">
+      <p class="article-lead">
+        Docker đã tạo ra một bước ngoặt lịch sử trong kỹ nghệ phần mềm bằng cách chuẩn hóa phương thức đóng gói ứng dụng cùng toàn bộ thư viện phụ thuộc vào các Container độc lập, loại bỏ hoàn toàn nghịch lý kinh điển <em>"chạy tốt trên máy của tôi nhưng lỗi trên server"</em>.
+      </p>
+
+      <h2 class="h4 font-serif mt-4 mb-3">1. Bản chất kỹ thuật: Container khác gì Virtual Machine?</h2>
+      <p>
+        Trong mô hình ảo hóa truyền thống (Virtualization bằng Hypervisor như VMware ESXi, VirtualBox), mỗi máy ảo phải chạy một hệ điều hành khách (Guest OS) hoàn chỉnh với kernel riêng, ngốn hàng gigabyte RAM và mất hàng phút để khởi động.
+      </p>
+      <p>
+        Ngược lại, <strong>Docker Container không phải là máy ảo</strong>. Container thực chất là một tiến trình người dùng bình thường chạy trực tiếp trên Linux Host Kernel, nhưng được hệ điều hành áp dụng hai cơ chế bảo vệ và cô lập cốt lõi:
+      </p>
+
+      <div class="article-callout">
+        <strong>Hai trụ cột cốt lõi của Linux Container:</strong>
+        <ul class="mb-0 mt-2 ps-3">
+          <li><strong>Linux Namespaces:</strong> Cô lập không gian hiển thị của tiến trình (PID namespace cô lập cây tiến trình, Net namespace cô lập IP/Port, Mnt namespace cô lập hệ thống file, IPC/UTS namespace).</li>
+          <li><strong>Control Groups (cgroups):</strong> Giám sát và áp đặt hạn mức tài nguyên phần cứng (CPU quota, RAM memory limit, Disk I/O throttling).</li>
+        </ul>
+      </div>
+
+      <h2 class="h4 font-serif mt-4 mb-3">2. Ứng dụng thực tế trong cụm MiniCloud</h2>
+      <p>
+        Trong đồ án mô phỏng MiniCloud, chúng tôi đã đóng gói toàn bộ 9 server thành các container độc lập kết nối chung mạng ảo <code>cloud-net</code>. Nhờ tối ưu giới hạn bộ nhớ qua directive <code>deploy.resources.limits.memory</code>, toàn bộ 11 containers bao gồm MariaDB, Keycloak, Prometheus, Grafana và SeaweedFS S3 có thể vận hành mượt mà trên máy chủ AWS EC2 gói miễn phí 1GB RAM.
+      </p>
+
+      <div class="code-block">
+# Trích xuất cấu hình giới hạn tài nguyên container trong docker-compose.yml
+services:
+  web-frontend-server1:
+    image: hotensv/minicloud-web:latest
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+      </div>
+
+      <h2 class="h4 font-serif mt-4 mb-3">3. Lời kết</h2>
+      <p>
+        Việc làm chủ công nghệ Container hóa không chỉ giúp các kỹ sư xây dựng hệ thống phân tán an toàn và linh hoạt mà còn là kỹ năng nền tảng bắt buộc trước khi bước vào thế giới điều phối quy mô lớn với Kubernetes.
+      </p>
+    </article>
+
+    <!-- Post Navigation -->
+    <nav class="d-flex justify-content-between align-items-center pt-4 mt-5 border-t-hairline">
+      <a href="/blog/" class="btn-modern-outline">
+        &larr; Danh mục bài viết
+      </a>
+      <a href="/blog/blog2.html" class="btn-modern-primary">
+        Bài tiếp theo: Cloud Computing 101 &rarr;
+      </a>
+    </nav>
+  </main>
+
+  <!-- Modernist Colophon Footer -->
+  <footer class="modern-footer py-4 mt-5">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="font-mono small">
+        MINICLOUD &copy; 2026 &mdash; ĐẠI HỌC TÔN ĐỨC THẮNG
+      </div>
+      <div class="font-mono small text-muted">
+        CHUYÊN ĐỀ ĐIỆN TOÁN ĐÁM MÂY (CLOUD COMPUTING)
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>

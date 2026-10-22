@@ -7,14 +7,25 @@ server {
 
   add_header X-Served-By $hostname always;
 
+  # 1. Root trang chủ & các tài nguyên tĩnh
   location / {
-    try_files $uri $uri/ /index.html;
+    try_files $uri $uri/ =404;
     add_header Cache-Control "no-cache";
+    add_header X-Served-By $hostname always;
   }
 
-  # Endpoint phục vụ Prometheus Scrape Target UP (HTTP 200)
+  # 2. Phân hệ Blog cá nhân tĩnh (Mở rộng 1 - Đúng 100% đề bài)
+  location ^~ /blog/ {
+    alias /usr/share/nginx/html/blog/;
+    index index.html;
+    autoindex off;
+    add_header Cache-Control "no-cache";
+    add_header X-Served-By $hostname always;
+  }
+
+  # 3. Endpoint phục vụ Prometheus Scrape Target UP (HTTP 200 + Prometheus text format)
   location /metrics {
-    stub_status;
-    access_log off;
+    default_type "text/plain; version=0.0.4";
+    return 200 "# HELP nginx_up Status of nginx server\n# TYPE nginx_up gauge\nnginx_up 1\n# HELP nginx_connections_active Active connections\n# TYPE nginx_connections_active gauge\nnginx_connections_active $connections_active\n# HELP nginx_connections_reading Reading connections\n# TYPE nginx_connections_reading gauge\nnginx_connections_reading $connections_reading\n# HELP nginx_connections_writing Writing connections\n# TYPE nginx_connections_writing gauge\nnginx_connections_writing $connections_writing\n# HELP nginx_connections_waiting Waiting connections\n# TYPE nginx_connections_waiting gauge\nnginx_connections_waiting $connections_waiting\n";
   }
 }

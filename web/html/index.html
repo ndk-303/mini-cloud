@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lưu trữ Blog Sinh viên – MyMiniCloud</title>
+  <title>MiniCloud – Home</title>
 
-  <!-- Typography: Newsreader (Editorial Serif) + Albert Sans (Bauhaus Modernist UI) + JetBrains Mono (Technical) -->
+  <!-- Typography: Newsreader (Editorial Serif) + Albert Sans (UI) + JetBrains Mono (Technical) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -15,268 +15,7 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-  <style>
-    :root {
-      --bg: #FAF9F5;
-      --bg-alt: #F2EFEB;
-      --surface: #FFFFFF;
-      --ink: #141413;
-      --ink-muted: #696863;
-      --ink-faint: #98968F;
-      --border: #E5E2DA;
-      --border-dark: #141413;
-      --accent: #C2410C;
-      --accent-hover: #9A3412;
-      --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-      --font-sans: 'Albert Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
-    }
-
-    ::selection {
-      background: var(--ink);
-      color: var(--bg);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--ink);
-      font-family: var(--font-sans);
-      font-size: 15px;
-      line-height: 1.65;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Headings & Typographic Hierarchy */
-    h1,
-    h2,
-    h3,
-    .font-serif {
-      font-family: var(--font-serif);
-      font-weight: 500;
-      color: var(--ink);
-      letter-spacing: -0.015em;
-    }
-
-    .font-mono {
-      font-family: var(--font-mono);
-      font-feature-settings: "tnum" 1;
-    }
-
-    /* Hairline borders & separators */
-    .border-hairline {
-      border-color: var(--border) !important;
-    }
-
-    .border-b-hairline {
-      border-bottom: 1px solid var(--border);
-    }
-
-    .border-t-hairline {
-      border-top: 1px solid var(--border);
-    }
-
-    /* Masthead Navigation */
-    .masthead {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 1020;
-    }
-
-    .masthead-brand {
-      font-family: var(--font-sans);
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--ink);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .masthead-brand:hover {
-      color: var(--accent);
-    }
-
-    .masthead-tag {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.05em;
-      padding: 2px 7px;
-      border: 1px solid var(--border);
-      color: var(--ink-muted);
-      border-radius: 2px;
-      background: var(--bg-alt);
-    }
-
-    .nav-editorial-link {
-      font-family: var(--font-sans);
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      text-decoration: none;
-      padding: 0.6rem 0.8rem;
-      transition: color 0.15s ease;
-      display: inline-block;
-    }
-
-    .nav-editorial-link:hover,
-    .nav-editorial-link.active {
-      color: var(--ink);
-      text-decoration: underline;
-      text-underline-offset: 6px;
-      text-decoration-thickness: 1.5px;
-    }
-
-    /* Minimalist Modernist Buttons */
-    .btn-modern-primary {
-      background: var(--ink);
-      color: var(--bg);
-      border: 1px solid var(--ink);
-      border-radius: 2px;
-      font-family: var(--font-sans);
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.55rem 1.25rem;
-      transition: all 0.15s ease;
-    }
-
-    .btn-modern-primary:hover,
-    .btn-modern-primary:focus {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #FFFFFF;
-    }
-
-    .btn-modern-outline {
-      background: transparent;
-      color: var(--ink);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      font-family: var(--font-sans);
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.55rem 1.1rem;
-      transition: all 0.15s ease;
-    }
-
-    .btn-modern-outline:hover {
-      border-color: var(--ink);
-      color: var(--ink);
-      background: var(--bg-alt);
-    }
-
-    .btn-modern-sm {
-      padding: 0.35rem 0.75rem;
-      font-size: 0.75rem;
-    }
-
-    /* Modernist Form Controls */
-    .form-control,
-    .form-select {
-      background-color: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      color: var(--ink);
-      font-family: var(--font-sans);
-      font-size: 0.92rem;
-      padding: 0.65rem 0.85rem;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      background-color: var(--surface);
-      border-color: var(--ink);
-      color: var(--ink);
-      box-shadow: none;
-      outline: 1px solid var(--ink);
-    }
-
-    /* User Role Badges */
-    .role-badge {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--ink);
-      border-radius: 2px;
-    }
-
-    .role-badge.admin {
-      background: var(--ink);
-      color: var(--bg);
-      border-color: var(--ink);
-    }
-
-    /* Modernist Modal Dialog */
-    .modal-content.modern-modal {
-      background: var(--bg);
-      border: 1px solid var(--ink);
-      border-radius: 2px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
-    }
-
-    .modal-header.modern-header {
-      border-bottom: 1px solid var(--border);
-      padding: 1.25rem 1.5rem;
-    }
-
-    .modal-body.modern-body {
-      padding: 1.5rem;
-    }
-
-    /* Content Area & Footer */
-    .content-area {
-      flex: 1;
-    }
-
-    footer.modern-footer {
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-      color: var(--ink-muted);
-      font-size: 0.8rem;
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 7px;
-      height: 7px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #D8D5CD;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #B6B2A8;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/modernist.css">
 </head>
 
 <body>
@@ -285,51 +24,291 @@
   <header class="masthead py-3">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-2">
-        <a class="masthead-brand" href="#home">
+        <a class="masthead-brand" href="/">
           <span>BLOG SINH VIÊN</span>
         </a>
       </div>
 
-      <nav class="d-flex align-items-center gap-1" id="nav-links"></nav>
+      <nav class="d-flex align-items-center gap-2">
+        <a class="nav-editorial-link active" href="/">Trang Chủ</a>
+        <a class="nav-editorial-link" href="/blog/">Blog Chuyên Đề</a>
+        <a class="nav-editorial-link" href="#database">Cơ Sở Dữ Liệu</a>
+        <a class="nav-editorial-link" href="#infrastructure">Hạ Tầng Cloud</a>
+      </nav>
 
-      <div class="d-flex align-items-center" id="nav-auth"></div>
+      <div class="d-flex align-items-center" id="nav-auth">
+        <button class="btn btn-modern-primary btn-modern-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+          Đăng nhập
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="container my-4 my-md-5 content-area" id="app">
-    <div class="text-center py-5">
-      <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
-      <div class="mt-2 font-mono small text-muted">ĐANG TẢI DỮ LIỆU...</div>
-    </div>
+  <main class="container my-4 my-md-5 flex-grow-1">
+    <!-- Editorial Hero Section -->
+    <section class="py-4 py-md-5 border-b-hairline mb-5">
+      <div class="row align-items-end justify-content-between g-4">
+        <div class="col-lg-9">
+          <span class="font-mono text-muted small text-uppercase d-block mb-2">00 / NHẬP MÔN ĐIỆN TOÁN ĐÁM MÂY &middot; TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG</span>
+          <h1 class="display-4 fw-normal font-serif mb-3" style="line-height: 1.15;">
+            MiniCloud – Home
+          </h1>
+          <p class="text-secondary fs-5 mb-0" style="max-width: 760px; font-weight: 400; line-height: 1.6;">
+            Hệ thống mô phỏng nền tảng đám mây thu nhỏ gồm 9 cụm máy chủ chuyên dụng, tích hợp cân bằng tải Round-Robin, định danh OIDC tập trung, CSDL quan hệ MariaDB và lưu trữ đối tượng S3.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Featured Blog Articles -->
+    <section class="mb-5 pb-4 border-b-hairline">
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-b-hairline">
+        <span class="font-mono text-uppercase small text-muted">01 / BÀI VIẾT CHUYÊN ĐỀ MỚI NHẤT</span>
+        <a href="/blog/" class="font-mono small text-dark text-decoration-none fw-semibold">
+          XEM TOÀN BỘ DANH MỤC &rarr;
+        </a>
+      </div>
+
+      <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-4">
+          <div class="article-img-frame mb-3">
+            <a href="/blog/blog1.html">
+              <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=800&auto=format&fit=crop&q=80" alt="Docker Deep Dive">
+            </a>
+          </div>
+          <div class="article-meta mb-2">01 / CONTAINERIZATION &middot; 22/10/2026</div>
+          <h2 class="h4 font-serif mb-2">
+            <a href="/blog/blog1.html" class="article-title-link">Docker Deep Dive: Công nghệ Container hóa</a>
+          </h2>
+          <p class="text-secondary small mb-3" style="line-height: 1.6;">
+            Khám phá kiến trúc Linux Namespaces và Cgroups giúp Docker đóng gói ứng dụng độc lập và tối ưu tài nguyên.
+          </p>
+          <a href="/blog/blog1.html" class="font-mono small text-dark fw-semibold text-decoration-none">ĐỌC BÀI VIẾT &rarr;</a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="col-md-4">
+          <div class="article-img-frame mb-3">
+            <a href="/blog/blog2.html">
+              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80" alt="Cloud Computing 101">
+            </a>
+          </div>
+          <div class="article-meta mb-2">02 / CLOUD ARCHITECTURE &middot; 22/10/2026</div>
+          <h2 class="h4 font-serif mb-2">
+            <a href="/blog/blog2.html" class="article-title-link">Cloud Computing 101: IaaS, PaaS, SaaS</a>
+          </h2>
+          <p class="text-secondary small mb-3" style="line-height: 1.6;">
+            So sánh phân cấp ba mô hình dịch vụ đám mây cốt lõi và bảng ánh xạ thực tế vào cụm 9 máy chủ MiniCloud.
+          </p>
+          <a href="/blog/blog2.html" class="font-mono small text-dark fw-semibold text-decoration-none">ĐỌC BÀI VIẾT &rarr;</a>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="col-md-4">
+          <div class="article-img-frame mb-3">
+            <a href="/blog/blog3.html">
+              <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80" alt="Microservices Architecture">
+            </a>
+          </div>
+          <div class="article-meta mb-2">03 / DISTRIBUTED SYSTEMS &middot; 22/10/2026</div>
+          <h2 class="h4 font-serif mb-2">
+            <a href="/blog/blog3.html" class="article-title-link">Microservices & Kiến trúc API Gateway</a>
+          </h2>
+          <p class="text-secondary small mb-3" style="line-height: 1.6;">
+            Phân tích nguyên lý cân bằng tải Round-Robin Nginx và cơ chế chứng thực tập trung không trạng thái OIDC JWT.
+          </p>
+          <a href="/blog/blog3.html" class="font-mono small text-dark fw-semibold text-decoration-none">ĐỌC BÀI VIẾT &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Database Integration (MariaDB CRUD & JSON) -->
+    <section class="mb-5 pb-4 border-b-hairline" id="database">
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-b-hairline">
+        <div>
+          <span class="font-mono text-uppercase small text-muted d-block">02 / TÍCH HỢP DỮ LIỆU &middot; MARIADB RDBMS</span>
+          <h2 class="h3 font-serif mt-1 mb-0">Quản Lý Danh Sách Sinh Viên</h2>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-modern-outline btn-modern-sm" id="btn-refresh-students">
+            Làm mới dữ liệu
+          </button>
+          <button class="btn btn-modern-primary btn-modern-sm d-none" id="btn-add-student-modal" data-bs-toggle="modal" data-bs-target="#studentModal">
+            + Thêm sinh viên (Admin)
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th style="width: 80px;">STT</th>
+              <th style="width: 140px;">MÃ SINH VIÊN</th>
+              <th>HỌ VÀ TÊN</th>
+              <th style="width: 140px;">NGÀY SINH</th>
+              <th style="width: 220px;">CHUYÊN NGÀNH</th>
+              <th style="width: 100px;" class="text-end admin-col d-none">THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody id="student-table-body">
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted font-mono small">
+                ĐANG TẢI DANH SÁCH TỪ CSDL MARIADB...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 3: Cloud Infrastructure Services -->
+    <section class="mb-4" id="infrastructure">
+      <div class="mb-4 pb-2 border-b-hairline">
+        <span class="font-mono text-uppercase small text-muted d-block">03 / TRẠNG THÁI HỆ THỐNG &middot; OBSERVABILITY & SERVICES</span>
+        <h2 class="h3 font-serif mt-1 mb-0">Hạ Tầng 9 Cụm Máy Chủ Điện Toán Đám Mây</h2>
+      </div>
+
+      <div class="row g-3">
+        <!-- Service 1 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">01. WEB FRONTEND CLUSTER</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 80 / 8001 / 8002</span>
+            </div>
+            <p class="small text-muted mb-2">Cụm Web Nginx tĩnh cân bằng tải Round-Robin luân phiên 1:1.</p>
+            <a href="/blog/" class="font-mono small text-dark fw-semibold text-decoration-none">TRUY CẬP BLOG &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">02. BACKEND REST API</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 8081</span>
+            </div>
+            <p class="small text-muted mb-2">Python Flask API xử lý nghiệp vụ, CRUD CSDL & xác thực OIDC JWT.</p>
+            <a href="/api/hello" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">ENDPOINT /API/HELLO &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">04. KEYCLOAK IDENTITY</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 8080</span>
+            </div>
+            <p class="small text-muted mb-2">Máy chủ quản lý danh tính OIDC, cấp phát token JWT & phân quyền RBAC.</p>
+            <a href="/auth/" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">ADMIN CONSOLE &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">05. OBJECT STORAGE (S3)</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 9000 / 9001</span>
+            </div>
+            <p class="small text-muted mb-2">Lưu trữ đối tượng S3 SeaweedFS, bucket profile-pics, documents & blog-images.</p>
+            <a href="http://localhost:9001/ui/index.html" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">STORAGE WEB UI &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">07. PROMETHEUS METRICS</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 9090</span>
+            </div>
+            <p class="small text-muted mb-2">Hệ thống cơ sở dữ liệu chuỗi thời gian, scrape chỉ số Node và Web targets.</p>
+            <a href="http://localhost:9090/targets" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">XEM TARGETS UP &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Service 6 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">08. GRAFANA DASHBOARD</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 3000</span>
+            </div>
+            <p class="small text-muted mb-2">Trực quan hóa tài nguyên CPU, RAM và Lưu lượng mạng thời gian thực.</p>
+            <a href="http://localhost:3000" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">MỞ DASHBOARD &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Login Modal -->
   <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content modern-modal">
-        <div class="modal-header modern-header d-flex justify-content-between align-items-center">
+      <div class="modal-content" style="background: var(--bg); border: 1px solid var(--ink); border-radius: 2px;">
+        <div class="modal-header border-b-hairline d-flex justify-content-between align-items-center p-4">
           <div>
-            <span class="font-mono text-muted small d-block mb-1">00 / XÁC THỰC TÀI KHOẢN</span>
-            <h4 class="h5 mb-0 fw-semibold" id="loginModalLabel">Đăng nhập tài khoản</h4>
+            <span class="font-mono text-muted small d-block mb-1">00 / XÁC THỰC DANH TÍNH OIDC</span>
+            <h4 class="h5 mb-0 fw-semibold font-serif" id="loginModalLabel">Đăng nhập tài khoản</h4>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
-        <div class="modal-body modern-body">
+        <div class="modal-body p-4">
           <div class="alert alert-danger d-none py-2 small font-mono rounded-0" id="login-error"></div>
           <form id="login-form">
             <div class="mb-3">
-              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Tên đăng
-                nhập</label>
-              <input type="text" class="form-control" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required
-                autofocus>
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Tên đăng nhập</label>
+              <input type="text" class="form-control font-mono" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required>
             </div>
             <div class="mb-4">
               <label class="form-label small fw-semibold text-uppercase font-mono" for="login-password">Mật khẩu</label>
-              <input type="password" class="form-control" id="login-password" placeholder="••••••••" required>
+              <input type="password" class="form-control font-mono" id="login-password" placeholder="••••••••" required>
             </div>
             <button type="submit" class="btn btn-modern-primary w-100 py-2">
-              Đăng nhập
+              Xác thực Keycloak OIDC
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Add Modal (Admin Only) -->
+  <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: var(--bg); border: 1px solid var(--ink); border-radius: 2px;">
+        <div class="modal-header border-b-hairline d-flex justify-content-between align-items-center p-4">
+          <div>
+            <span class="font-mono text-muted small d-block mb-1">02 / QUẢN TRỊ MARIADB</span>
+            <h4 class="h5 mb-0 fw-semibold font-serif" id="studentModalLabel">Thêm sinh viên mới</h4>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="student-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">MÃ SINH VIÊN</label>
+              <input type="text" class="form-control font-mono" id="st-id" placeholder="Ví dụ: SV006" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">HỌ VÀ TÊN</label>
+              <input type="text" class="form-control font-sans" id="st-name" placeholder="Ví dụ: Đỗ Thị Mai" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">NGÀY SINH</label>
+              <input type="date" class="form-control font-mono" id="st-dob" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold font-mono">CHUYÊN NGÀNH</label>
+              <input type="text" class="form-control font-sans" id="st-major" placeholder="Ví dụ: Cloud Architecture" required>
+            </div>
+            <button type="submit" class="btn btn-modern-primary w-100 py-2">
+              Lưu vào CSDL MariaDB
             </button>
           </form>
         </div>
@@ -341,16 +320,13 @@
   <footer class="modern-footer py-4 mt-5">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="font-mono small">
-        MYMINICLOUD ARCHIVE &copy; 2026 &mdash; ĐẠI HỌC TÔN ĐỨC THẮNG
-      </div>
-      <div class="font-mono small text-muted">
-        PHONG CÁCH TẠP CHÍ &middot; CỤM 9 MÁY CHỦ CLOUD
+        MINICLOUD &copy; 2026 &mdash; TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG
       </div>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="./app.js"></script>
+  <script src="/js/main.js"></script>
 </body>
 
 </html>
