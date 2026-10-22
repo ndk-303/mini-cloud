@@ -3,10 +3,26 @@ networks:
     name: cloud-net
 
 services:
-  # ── 1. Web Frontend Service (Custom Image) ──────────────────────────────────
-  web-frontend-server:
+  # ── 1a. Web Frontend Instance 1 (Primary, Port 8080) ────────────────────────
+  web-frontend-server1:
     build: ./web
     image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
+    container_name: web-frontend-server1
+    ports: ["8080:80"]
+    networks: [cloud-net]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  # ── 1b. Web Frontend Instance 2 (Load Balancing Cluster) ───────────────────
+  web-frontend-server2:
+    build: ./web
+    image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
+    container_name: web-frontend-server2
+    volumes:
+      - ./web/html/index2.html:/usr/share/nginx/html/index.html:ro
     networks: [cloud-net]
     restart: unless-stopped
     deploy:
@@ -142,6 +158,8 @@ services:
     image: grafana/grafana:latest
     container_name: monitoring-grafana-dashboard-server
     ports: ["3000:3000"]
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks: [cloud-net]
     restart: unless-stopped
     deploy:
@@ -155,7 +173,8 @@ services:
     image: ${DOCKER_USER:-hotensv}/myminicloud-proxy:latest
     container_name: api-gateway-proxy-server
     depends_on:
-      - web-frontend-server
+      - web-frontend-server1
+      - web-frontend-server2
       - application-backend-server
       - authentication-identity-server
     ports: ["80:80"]
