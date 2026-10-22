@@ -6,25 +6,27 @@ import pymysql.cursors
 
 ISSUER   = os.getenv("OIDC_ISSUER",   "http://authentication-identity-server:8080/realms/master")
 AUDIENCE = os.getenv("OIDC_AUDIENCE", "myapp")
-JWKS_URL = f"{ISSUER}/protocol/openid-connect/certs"
 
-_JWKS = None
-_TS   = 0
+_JWKS_CACHE = {}
 
-def get_jwks():
-    global _JWKS, _TS
+def get_jwks(issuer_url):
     now = time.time()
-    if not _JWKS or now - _TS > 600:
-        _JWKS = requests.get(JWKS_URL, timeout=5).json()
-        _TS = now
-    return _JWKS
+    cached = _JWKS_CACHE.get(issuer_url)
+    if not cached or now - cached["ts"] > 600:
+        jwks_url = f"{issuer_url.rstrip('/')}/protocol/openid-connect/certs"
+        # Hỗ trợ phân giải nếu issuer trong token dùng localhost:8081
+        internal_url = jwks_url.replace("localhost:8081", "authentication-identity-server:8080") \
+                               .replace("127.0.0.1:8081", "authentication-identity-server:8080")
+        resp = requests.get(internal_url, timeout=5)
+        _JWKS_CACHE[issuer_url] = {"data": resp.json(), "ts": now}
+    return _JWKS_CACHE[issuer_url]["data"]
 
 def get_db():
     return pymysql.connect(
         host=os.getenv("DB_HOST", "relational-database-server"),
-        user="root",
-        password="root",
-        database="studentdb",
+        user=os.getenv("DB_USER", "root"),
+        password=os.getenv("DB_PASSWORD", "root"),
+        database=os.getenv("DB_NAME", "studentdb"),
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -43,15 +45,22 @@ def secure():
         return jsonify(error="Missing Bearer token"), 401
     token = auth.split(" ", 1)[1]
     try:
+        # Lấy dynamic issuer từ token để hỗ trợ cả master realm và realm_<MSSV>
+        unverified_claims = jwt.get_unverified_claims(token)
+        token_issuer = unverified_claims.get("iss", ISSUER)
+        jwks = get_jwks(token_issuer)
+
+        # Giải mã và xác thực chữ ký RS256, linh hoạt audience (hỗ trợ flask-app, myapp...)
         payload = jwt.decode(
-            token, get_jwks(),
+            token, jwks,
             algorithms=["RS256"],
-            audience=AUDIENCE,
-            issuer=ISSUER
+            issuer=token_issuer,
+            options={"verify_aud": False}
         )
         return jsonify(
             message="Secure resource OK",
-            preferred_username=payload.get("preferred_username")
+            preferred_username=payload.get("preferred_username"),
+            realm=token_issuer.rstrip("/").split("/")[-1]
         )
     except Exception as e:
         return jsonify(error=str(e)), 401
