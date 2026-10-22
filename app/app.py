@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 import time, requests, os, json
+from urllib.parse import urlparse
 from jose import jwt
 import pymysql
 import pymysql.cursors
@@ -14,9 +15,12 @@ def get_jwks(issuer_url):
     cached = _JWKS_CACHE.get(issuer_url)
     if not cached or now - cached["ts"] > 600:
         jwks_url = f"{issuer_url.rstrip('/')}/protocol/openid-connect/certs"
-        # Hỗ trợ phân giải nếu issuer trong token dùng localhost:8081
-        internal_url = jwks_url.replace("localhost:8081", "authentication-identity-server:8080") \
-                               .replace("127.0.0.1:8081", "authentication-identity-server:8080")
+        # Chuẩn hóa URL nội bộ Keycloak: hỗ trợ cả localhost, proxy /auth/, và port 8081
+        p = urlparse(jwks_url)
+        path = p.path
+        if path.startswith("/auth/"):
+            path = path[5:]
+        internal_url = f"http://authentication-identity-server:8080{path}"
         resp = requests.get(internal_url, timeout=5)
         _JWKS_CACHE[issuer_url] = {"data": resp.json(), "ts": now}
     return _JWKS_CACHE[issuer_url]["data"]
@@ -99,6 +103,8 @@ def students_db_update(sid):
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(f"UPDATE students SET {set_clause} WHERE id=%s", (*valid.values(), sid))
+            if cur.rowcount == 0:
+                return jsonify(error="Student not found"), 404
         conn.commit()
     return jsonify(updated=sid)
 
@@ -107,6 +113,8 @@ def students_db_delete(sid):
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM students WHERE id = %s", (sid,))
+            if cur.rowcount == 0:
+                return jsonify(error="Student not found"), 404
         conn.commit()
     return jsonify(deleted=sid)
 

@@ -9,7 +9,10 @@ services:
     image: ${DOCKER_USER:-hotensv}/myminicloud-web:latest
     container_name: web-frontend-server1
     ports: ["8080:80"]
-    networks: [cloud-net]
+    networks:
+      cloud-net:
+        aliases:
+          - web-frontend-server
     restart: unless-stopped
     deploy:
       resources:
