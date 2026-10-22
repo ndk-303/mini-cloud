@@ -16,16 +16,16 @@ export function renderNav() {
   const currentPage = currentHash.replace('#', '').split('/')[0];
 
   let linksHtml = `
-    <a class="nav-editorial-link ${currentPage === 'home' || !currentPage ? 'active' : ''}" href="#home">Articles</a>
+    <a class="nav-editorial-link ${currentPage === 'home' || !currentPage ? 'active' : ''}" href="#home">Bài viết</a>
   `;
 
   if (auth) {
     linksHtml += `
-      <a class="nav-editorial-link ${currentPage === 'my-blogs' ? 'active' : ''}" href="#my-blogs">My Writings</a>
+      <a class="nav-editorial-link ${currentPage === 'my-blogs' ? 'active' : ''}" href="#my-blogs">Bài viết của tôi</a>
     `;
     if (auth.role === 'admin') {
       linksHtml += `
-        <a class="nav-editorial-link text-danger ${currentPage === 'admin' ? 'active' : ''}" href="#admin">Students Ledger</a>
+        <a class="nav-editorial-link text-danger ${currentPage === 'admin' ? 'active' : ''}" href="#admin">Quản lý sinh viên</a>
       `;
     }
   }
@@ -33,12 +33,13 @@ export function renderNav() {
 
   if (auth) {
     const roleClass = auth.role === 'admin' ? 'admin' : 'student';
+    const roleText = auth.role === 'admin' ? 'QUẢN TRỊ' : 'SINH VIÊN';
     navAuth.innerHTML = `
       <div class="d-flex align-items-center gap-2">
-        <span class="role-badge ${roleClass}">${auth.role}</span>
+        <span class="role-badge ${roleClass}">${roleText}</span>
         <span class="font-mono small fw-semibold text-dark">${auth.username}</span>
         <button class="btn btn-modern-outline btn-modern-sm" id="btn-logout" title="Đăng xuất">
-          Logout
+          Đăng xuất
         </button>
       </div>
     `;
@@ -51,7 +52,7 @@ export function renderNav() {
   } else {
     navAuth.innerHTML = `
       <button class="btn btn-modern-primary btn-modern-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
-        Sign In
+        Đăng nhập
       </button>
     `;
   }
@@ -66,7 +67,7 @@ async function handleLogin(e) {
 
   errEl.classList.add('d-none');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'AUTHENTICATING...';
+  submitBtn.textContent = 'ĐANG XÁC THỰC...';
 
   try {
     const auth = await login(username, password);
@@ -82,7 +83,7 @@ async function handleLogin(e) {
     errEl.classList.remove('d-none');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'XÁC THỰC & ĐĂNG NHẬP';
+    submitBtn.textContent = 'ĐĂNG NHẬP';
   }
 }
 
@@ -127,7 +128,7 @@ export async function route() {
     appEl.innerHTML = `
       <div class="text-center py-5">
         <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
-        <div class="mt-2 font-mono small text-muted">LOADING VIEW...</div>
+        <div class="mt-2 font-mono small text-muted">ĐANG TẢI TRANG...</div>
       </div>
     `;
     const mod = await loader();
@@ -137,9 +138,9 @@ export async function route() {
     console.error('Routing error:', error);
     appEl.innerHTML = `
       <div class="py-5 text-center">
-        <h2 class="h4 font-serif text-danger mb-2">Error Loading View</h2>
+        <h2 class="h4 font-serif text-danger mb-2">Lỗi Tải Trang</h2>
         <p class="text-muted font-mono small">${error.message}</p>
-        <button class="btn btn-modern-outline btn-modern-sm mt-3" onclick="window.location.hash='#home'">Return to Archive</button>
+        <button class="btn btn-modern-outline btn-modern-sm mt-3" onclick="window.location.hash='#home'">Quay lại trang chủ</button>
       </div>
     `;
   }

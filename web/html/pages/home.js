@@ -9,22 +9,22 @@ export async function render(container) {
     <section class="py-4 py-md-5 border-b-hairline mb-5">
       <div class="row align-items-end justify-content-between g-4">
         <div class="col-lg-8">
-          <span class="font-mono text-muted small text-uppercase d-block mb-2">01 / ARCHIVE &middot; TECHNICAL ESSAYS</span>
+          <span class="font-mono text-muted small text-uppercase d-block mb-2">01 / LƯU TRỮ &middot; BÀI VIẾT KỸ THUẬT</span>
           <h1 class="display-4 fw-normal font-serif mb-3" style="line-height: 1.15;">
-            The Student Monograph
+            Chuyên san Sinh viên
           </h1>
           <p class="text-secondary fs-5 mb-0" style="max-width: 680px; font-weight: 400; line-height: 1.6;">
-            A curated collection of student research, cloud infrastructure architectures, and computational systems notes.
+            Tuyển tập nghiên cứu khoa học, kiến trúc hạ tầng đám mây và ghi chép kỹ thuật của sinh viên.
           </p>
         </div>
         <div class="col-lg-3 text-lg-end">
           ${
             auth 
               ? `<button class="btn btn-modern-primary" id="btn-create-blog">
-                   Write Essay &rarr;
+                   Viết bài mới &rarr;
                  </button>`
               : `<button class="btn btn-modern-outline" data-bs-toggle="modal" data-bs-target="#loginModal">
-                   Sign In to Write
+                   Đăng nhập để viết bài
                  </button>`
           }
         </div>
@@ -34,14 +34,14 @@ export async function render(container) {
     <!-- Articles List Container -->
     <section>
       <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-b-hairline">
-        <span class="font-mono text-uppercase small text-muted">INDEXED ARTICLES</span>
-        <span class="font-mono small text-muted" id="blog-count">SYNCING...</span>
+        <span class="font-mono text-uppercase small text-muted">BÀI VIẾT</span>
+        <span class="font-mono small text-muted" id="blog-count">ĐANG TẢI...</span>
       </div>
 
       <div id="articles-stream" class="d-flex flex-column">
         <div class="py-5 text-center">
           <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
-          <div class="mt-2 font-mono small text-muted">READING ARCHIVES...</div>
+          <div class="mt-2 font-mono small text-muted">ĐANG ĐỌC DỮ LIỆU...</div>
         </div>
       </div>
     </section>
@@ -60,21 +60,21 @@ export async function render(container) {
     if (!blogs || blogs.length === 0) {
       stream.innerHTML = `
         <div class="py-5 text-center">
-          <p class="font-serif fs-4 text-muted mb-2">No monographs found in archive.</p>
-          <p class="text-muted small font-mono">Use the button above to publish the first article.</p>
+          <p class="font-serif fs-4 text-muted mb-2">Chưa có bài viết nào trong lưu trữ.</p>
+          <p class="text-muted small font-mono">Bấm nút phía trên để đăng bài viết đầu tiên.</p>
         </div>
       `;
-      countEl.textContent = '0 ENTRIES';
+      countEl.textContent = '0 BÀI VIẾT';
       return;
     }
 
-    countEl.textContent = `${blogs.length} ${blogs.length === 1 ? 'ENTRY' : 'ENTRIES'}`;
+    countEl.textContent = `${blogs.length} BÀI VIẾT`;
 
     stream.innerHTML = blogs.map((blog, idx) => {
       const indexNumber = String(idx + 1).padStart(2, '0');
-      const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric'
-      }).toUpperCase() : 'RECENT';
+      const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      }) : 'MỚI ĐĂNG';
 
       const snippet = blog.content ? (blog.content.length > 210 ? blog.content.substring(0, 210) + '...' : blog.content) : '';
 
@@ -97,7 +97,7 @@ export async function render(container) {
                 <span>&sol;</span>
                 <span>${dateStr}</span>
                 <span>&sol;</span>
-                <span class="text-uppercase">BY ${blog.author_id}</span>
+                <span class="text-uppercase">TÁC GIẢ: ${blog.author_id}</span>
               </div>
               
               <h2 class="h2 font-serif mb-3">
@@ -112,7 +112,7 @@ export async function render(container) {
 
               <div>
                 <a href="#blog/${blog.id}" class="font-mono small text-dark text-decoration-none fw-semibold read-link">
-                  READ MONOGRAPH &rarr;
+                  ĐỌC BÀI VIẾT &rarr;
                 </a>
               </div>
             </div>
@@ -154,7 +154,7 @@ export async function render(container) {
     if (stream) {
       stream.innerHTML = `
         <div class="alert alert-danger font-mono small rounded-0">
-          FAILED TO COMMUNICATE WITH APPSERVER: ${err.message}
+          KHÔNG THỂ KẾT NỐI MÁY CHỦ ỨNG DỤNG: ${err.message}
         </div>
       `;
     }

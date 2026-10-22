@@ -12,15 +12,15 @@ export async function render(container, id) {
       <!-- Back Navigation -->
       <div class="mb-4 pb-2 border-b-hairline d-flex justify-content-between align-items-center">
         <button class="btn btn-link p-0 text-dark font-mono small text-decoration-none" id="btn-back">
-          &larr; BACK TO ARCHIVE
+          &larr; VỀ TRANG BÀI VIẾT
         </button>
-        <span class="font-mono small text-muted">ENTRY &num;${id}</span>
+        <span class="font-mono small text-muted">MỤC &num;${id}</span>
       </div>
 
       <div id="blog-content-wrapper">
         <div class="py-5 text-center">
           <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
-          <div class="mt-2 font-mono small text-muted">LOADING ESSAY...</div>
+          <div class="mt-2 font-mono small text-muted">ĐANG TẢI BÀI VIẾT...</div>
         </div>
       </div>
     </article>
@@ -35,8 +35,8 @@ export async function render(container, id) {
     if (!res.ok) {
       document.getElementById('blog-content-wrapper').innerHTML = `
         <div class="py-5 text-center">
-          <h2 class="h3 font-serif text-muted mb-2">Monograph Not Found</h2>
-          <p class="font-mono small text-secondary">The requested article ID #${id} is not present in the archive.</p>
+          <h2 class="h3 font-serif text-muted mb-2">Không Tìm Thấy Bài Viết</h2>
+          <p class="font-mono small text-secondary">Bài viết mã số #${id} không tồn tại trong hệ thống lưu trữ.</p>
         </div>
       `;
       return;
@@ -47,9 +47,9 @@ export async function render(container, id) {
 
     const isOwnerOrAdmin = auth && (auth.username.toUpperCase() === blog.author_id.toUpperCase() || auth.role === 'admin');
 
-    const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    }).toUpperCase() : 'UNKNOWN DATE';
+    const dateStr = blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    }) : 'MỚI ĐĂNG';
 
     const imageHtml = blog.image_url ? `
       <figure class="my-5 text-center">
@@ -62,10 +62,10 @@ export async function render(container, id) {
     const actionsHtml = isOwnerOrAdmin ? `
       <div class="d-flex gap-2">
         <button class="btn btn-modern-outline btn-modern-sm" id="btn-edit-blog">
-          Edit
+          Chỉnh sửa
         </button>
         <button class="btn btn-modern-outline btn-modern-sm text-danger" id="btn-delete-blog">
-          Delete
+          Xóa bài
         </button>
       </div>
     ` : '';
@@ -82,11 +82,11 @@ export async function render(container, id) {
           <div class="py-3 border-t-hairline border-b-hairline d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div class="d-flex flex-wrap align-items-center gap-4 font-mono small text-muted">
               <div>
-                <span class="text-uppercase" style="color: var(--ink-faint);">AUTHOR</span>
+                <span class="text-uppercase" style="color: var(--ink-faint);">TÁC GIẢ</span>
                 <span class="text-dark fw-semibold ms-1">${blog.author_id}</span>
               </div>
               <div>
-                <span class="text-uppercase" style="color: var(--ink-faint);">DATE</span>
+                <span class="text-uppercase" style="color: var(--ink-faint);">NGÀY ĐĂNG</span>
                 <span class="text-dark ms-1">${dateStr}</span>
               </div>
             </div>
@@ -104,7 +104,7 @@ ${blog.content}
 
         <!-- Colophon Endmark -->
         <div class="pt-4 border-t-hairline text-center text-muted font-mono small">
-          &mdash; END OF MONOGRAPH &mdash;
+          &mdash; HẾT BÀI VIẾT &mdash;
         </div>
       </div>
     `;
@@ -114,7 +114,7 @@ ${blog.content}
         navigate('#blog-form/' + blog.id);
       });
       document.getElementById('btn-delete-blog')?.addEventListener('click', async () => {
-        if (!confirm('Xác nhận xóa vĩnh viễn bài viết này khỏi archive?')) return;
+        if (!confirm('Xác nhận xóa vĩnh viễn bài viết này khỏi lưu trữ?')) return;
         const delRes = await apiFetch(`/blogs/${blog.id}`, { method: 'DELETE' });
         if (delRes.ok) {
           navigate('#home');
@@ -127,7 +127,7 @@ ${blog.content}
 
   } catch (err) {
     document.getElementById('blog-content-wrapper').innerHTML = `
-      <div class="alert alert-danger font-mono small rounded-0">Error: ${err.message}</div>
+      <div class="alert alert-danger font-mono small rounded-0">LỖI: ${err.message}</div>
     `;
   }
 }

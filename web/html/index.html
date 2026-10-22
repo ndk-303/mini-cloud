@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Student Blog Archive – MyMiniCloud</title>
-  
+  <title>Lưu trữ Blog Sinh viên – MyMiniCloud</title>
+
   <!-- Typography: Newsreader (Editorial Serif) + Albert Sans (Bauhaus Modernist UI) + JetBrains Mono (Technical) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
+    rel="stylesheet">
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
+
   <style>
     :root {
       --bg: #FAF9F5;
@@ -53,7 +56,10 @@
     }
 
     /* Headings & Typographic Hierarchy */
-    h1, h2, h3, .font-serif {
+    h1,
+    h2,
+    h3,
+    .font-serif {
       font-family: var(--font-serif);
       font-weight: 500;
       color: var(--ink);
@@ -69,9 +75,11 @@
     .border-hairline {
       border-color: var(--border) !important;
     }
+
     .border-b-hairline {
       border-bottom: 1px solid var(--border);
     }
+
     .border-t-hairline {
       border-top: 1px solid var(--border);
     }
@@ -97,6 +105,7 @@
       align-items: center;
       gap: 0.5rem;
     }
+
     .masthead-brand:hover {
       color: var(--accent);
     }
@@ -124,7 +133,9 @@
       transition: color 0.15s ease;
       display: inline-block;
     }
-    .nav-editorial-link:hover, .nav-editorial-link.active {
+
+    .nav-editorial-link:hover,
+    .nav-editorial-link.active {
       color: var(--ink);
       text-decoration: underline;
       text-underline-offset: 6px;
@@ -145,7 +156,9 @@
       padding: 0.55rem 1.25rem;
       transition: all 0.15s ease;
     }
-    .btn-modern-primary:hover, .btn-modern-primary:focus {
+
+    .btn-modern-primary:hover,
+    .btn-modern-primary:focus {
       background: var(--accent);
       border-color: var(--accent);
       color: #FFFFFF;
@@ -164,6 +177,7 @@
       padding: 0.55rem 1.1rem;
       transition: all 0.15s ease;
     }
+
     .btn-modern-outline:hover {
       border-color: var(--ink);
       color: var(--ink);
@@ -176,7 +190,8 @@
     }
 
     /* Modernist Form Controls */
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
       background-color: var(--surface);
       border: 1px solid var(--border);
       border-radius: 2px;
@@ -186,7 +201,9 @@
       padding: 0.65rem 0.85rem;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
       background-color: var(--surface);
       border-color: var(--ink);
       color: var(--ink);
@@ -206,6 +223,7 @@
       color: var(--ink);
       border-radius: 2px;
     }
+
     .role-badge.admin {
       background: var(--ink);
       color: var(--bg);
@@ -217,12 +235,14 @@
       background: var(--bg);
       border: 1px solid var(--ink);
       border-radius: 2px;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
     }
+
     .modal-header.modern-header {
       border-bottom: 1px solid var(--border);
       padding: 1.25rem 1.5rem;
     }
+
     .modal-body.modern-body {
       padding: 1.5rem;
     }
@@ -244,90 +264,93 @@
       width: 7px;
       height: 7px;
     }
+
     ::-webkit-scrollbar-track {
       background: var(--bg);
     }
+
     ::-webkit-scrollbar-thumb {
       background: #D8D5CD;
     }
+
     ::-webkit-scrollbar-thumb:hover {
       background: #B6B2A8;
     }
   </style>
 </head>
+
 <body>
 
-<!-- Masthead -->
-<header class="masthead py-3">
-  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-    <div class="d-flex align-items-center gap-2">
-      <a class="masthead-brand" href="#home">
-        <span>STUDENT BLOG</span>
-      </a>
-      <span class="masthead-tag font-mono">ARCHIVE / v2</span>
+  <!-- Masthead -->
+  <header class="masthead py-3">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <a class="masthead-brand" href="#home">
+          <span>BLOG SINH VIÊN</span>
+        </a>
+      </div>
+
+      <nav class="d-flex align-items-center gap-1" id="nav-links"></nav>
+
+      <div class="d-flex align-items-center" id="nav-auth"></div>
     </div>
+  </header>
 
-    <nav class="d-flex align-items-center gap-1" id="nav-links"></nav>
+  <!-- Main Container -->
+  <main class="container my-4 my-md-5 content-area" id="app">
+    <div class="text-center py-5">
+      <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
+      <div class="mt-2 font-mono small text-muted">ĐANG TẢI DỮ LIỆU...</div>
+    </div>
+  </main>
 
-    <div class="d-flex align-items-center" id="nav-auth"></div>
-  </div>
-</header>
-
-<!-- Main Container -->
-<main class="container my-4 my-md-5 content-area" id="app">
-  <div class="text-center py-5">
-    <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
-    <div class="mt-2 font-mono small text-muted">LOADING ARCHIVE...</div>
-  </div>
-</main>
-
-<!-- Login Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modern-modal">
-      <div class="modal-header modern-header d-flex justify-content-between align-items-center">
-        <div>
-          <span class="font-mono text-muted small d-block mb-1">00 / AUTHENTICATION</span>
-          <h4 class="h5 mb-0 fw-semibold" id="loginModalLabel">Đăng nhập tài khoản</h4>
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modern-modal">
+        <div class="modal-header modern-header d-flex justify-content-between align-items-center">
+          <div>
+            <span class="font-mono text-muted small d-block mb-1">00 / XÁC THỰC TÀI KHOẢN</span>
+            <h4 class="h5 mb-0 fw-semibold" id="loginModalLabel">Đăng nhập tài khoản</h4>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <div class="modal-body modern-body">
-        <p class="text-muted small mb-4">
-          Xác thực qua Keycloak OIDC. Sinh viên: <code>SV001</code>–<code>SV005</code> (mật khẩu <code>student123</code>). Admin: <code>admin</code> (mật khẩu <code>admin</code>).
-        </p>
-        <div class="alert alert-danger d-none py-2 small font-mono rounded-0" id="login-error"></div>
-        <form id="login-form">
-          <div class="mb-3">
-            <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Mã số SV / Username</label>
-            <input type="text" class="form-control" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required autofocus>
-          </div>
-          <div class="mb-4">
-            <label class="form-label small fw-semibold text-uppercase font-mono" for="login-password">Mật khẩu</label>
-            <input type="password" class="form-control" id="login-password" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-modern-primary w-100 py-2">
-            Xác thực & Đăng nhập
-          </button>
-        </form>
+        <div class="modal-body modern-body">
+          <div class="alert alert-danger d-none py-2 small font-mono rounded-0" id="login-error"></div>
+          <form id="login-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Tên đăng
+                nhập</label>
+              <input type="text" class="form-control" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required
+                autofocus>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-password">Mật khẩu</label>
+              <input type="password" class="form-control" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-modern-primary w-100 py-2">
+              Đăng nhập
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modernist Colophon Footer -->
-<footer class="modern-footer py-4 mt-5">
-  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-    <div class="font-mono small">
-      MYMINICLOUD ARCHIVE &copy; 2026 &mdash; TON DUC THANG UNIVERSITY
+  <!-- Modernist Colophon Footer -->
+  <footer class="modern-footer py-4 mt-5">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="font-mono small">
+        MYMINICLOUD ARCHIVE &copy; 2026 &mdash; ĐẠI HỌC TÔN ĐỨC THẮNG
+      </div>
+      <div class="font-mono small text-muted">
+        PHONG CÁCH TẠP CHÍ &middot; CỤM 9 MÁY CHỦ CLOUD
+      </div>
     </div>
-    <div class="font-mono small text-muted">
-      SWISS EDITORIAL &middot; 9-NODE TOPOLOGY
-    </div>
-  </div>
-</footer>
+  </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="./app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
+
 </html>

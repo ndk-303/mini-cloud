@@ -14,14 +14,14 @@ export async function render(container) {
       <!-- Admin Header -->
       <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pb-3 border-b-hairline gap-3">
         <div>
-          <span class="font-mono text-danger small text-uppercase d-block mb-1">&bull; 03 / SYSTEM ADMINISTRATION</span>
-          <h2 class="display-6 font-serif mb-1">Student Directory</h2>
+          <span class="font-mono text-danger small text-uppercase d-block mb-1">&bull; 03 / QUẢN TRỊ HỆ THỐNG</span>
+          <h2 class="display-6 font-serif mb-1">Danh mục Sinh viên</h2>
           <p class="text-secondary small font-mono mb-0">
-            Target Database: <strong>MariaDB &middot; studentdb.students</strong> &middot; Authenticated as Admin
+            Cơ sở dữ liệu: <strong>MariaDB &middot; studentdb.students</strong> &middot; Quyền Quản trị viên (Admin)
           </p>
         </div>
         <button class="btn btn-modern-primary" id="btn-open-add-student">
-          &plus; Register Student
+          &plus; Thêm sinh viên mới
         </button>
       </div>
 
@@ -32,18 +32,18 @@ export async function render(container) {
             <thead>
               <tr class="font-mono small text-muted border-b-hairline">
                 <th scope="col" style="width: 70px; font-weight: 500;">ID</th>
-                <th scope="col" style="width: 140px; font-weight: 500;">STUDENT ID</th>
-                <th scope="col" style="font-weight: 500;">FULL NAME</th>
-                <th scope="col" style="width: 150px; font-weight: 500;">DATE OF BIRTH</th>
-                <th scope="col" style="font-weight: 500;">MAJOR / PROGRAM</th>
-                <th scope="col" class="text-end" style="width: 140px; font-weight: 500;">OPERATIONS</th>
+                <th scope="col" style="width: 140px; font-weight: 500;">MÃ SỐ SV</th>
+                <th scope="col" style="font-weight: 500;">HỌ VÀ TÊN</th>
+                <th scope="col" style="width: 150px; font-weight: 500;">NGÀY SINH</th>
+                <th scope="col" style="font-weight: 500;">CHUYÊN NGÀNH</th>
+                <th scope="col" class="text-end" style="width: 140px; font-weight: 500;">THAO TÁC</th>
               </tr>
             </thead>
             <tbody id="student-tbody">
               <tr>
                 <td colspan="6" class="text-center py-5">
                   <div class="spinner-border spinner-border-sm text-dark"></div>
-                  <div class="mt-2 font-mono small text-muted">QUERYING MARIADB...</div>
+                  <div class="mt-2 font-mono small text-muted">ĐANG TRUY VẤN MARIADB...</div>
                 </td>
               </tr>
             </tbody>
@@ -58,8 +58,8 @@ export async function render(container) {
         <div class="modal-content modern-modal">
           <div class="modal-header modern-header d-flex justify-content-between align-items-center">
             <div>
-              <span class="font-mono text-muted small d-block mb-1">RECORD MANAGEMENT</span>
-              <h5 class="mb-0 fw-semibold" id="studentModalLabel">Register Student</h5>
+              <span class="font-mono text-muted small d-block mb-1">QUẢN LÝ DỮ LIỆU</span>
+              <h5 class="mb-0 fw-semibold" id="studentModalLabel">Thêm sinh viên mới</h5>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
           </div>
@@ -69,11 +69,11 @@ export async function render(container) {
               <input type="hidden" id="student-db-id">
               <div class="mb-3">
                 <label class="form-label font-mono small text-uppercase" for="student-code">Mã số sinh viên (MSSV) <span class="text-danger">*</span></label>
-                <input type="text" class="form-control font-mono" id="student-code" placeholder="e.g. SV006" required>
+                <input type="text" class="form-control font-mono" id="student-code" placeholder="Ví dụ: SV006" required>
               </div>
               <div class="mb-3">
                 <label class="form-label font-mono small text-uppercase" for="student-fullname">Họ và tên <span class="text-danger">*</span></label>
-                <input type="text" class="form-control font-sans" id="student-fullname" placeholder="e.g. Nguyễn Văn A" required>
+                <input type="text" class="form-control font-sans" id="student-fullname" placeholder="Ví dụ: Nguyễn Văn A" required>
               </div>
               <div class="mb-3">
                 <label class="form-label font-mono small text-uppercase" for="student-dob">Ngày sinh</label>
@@ -81,7 +81,7 @@ export async function render(container) {
               </div>
               <div class="mb-4">
                 <label class="form-label font-mono small text-uppercase" for="student-major">Chuyên ngành đào tạo <span class="text-danger">*</span></label>
-                <input type="text" class="form-control font-sans" id="student-major" placeholder="e.g. Computer Science" required>
+                <input type="text" class="form-control font-sans" id="student-major" placeholder="Ví dụ: Khoa học máy tính" required>
               </div>
               <button type="submit" class="btn btn-modern-primary w-100 py-2" id="btn-save-student">
                 Lưu vào CSDL
@@ -102,14 +102,14 @@ export async function render(container) {
       const res = await apiFetch('/students-db');
       if (!res.ok) {
         tbody.innerHTML = `
-          <tr><td colspan="6" class="text-center py-4 text-danger font-mono small">ACCESS DENIED OR BACKEND ERROR (${res.status}).</td></tr>
+          <tr><td colspan="6" class="text-center py-4 text-danger font-mono small">TỪ CHỐI TRUY CẬP HOẶC LỖI MÁY CHỦ (${res.status}).</td></tr>
         `;
         return;
       }
 
       const students = await res.json();
       if (!students || students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted font-mono small">NO RECORDS IN STUDENTDB.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted font-mono small">CHƯA CÓ DỮ LIỆU SINH VIÊN TRONG CSDL.</td></tr>`;
         return;
       }
 
@@ -126,10 +126,10 @@ export async function render(container) {
             </td>
             <td class="text-end">
               <button class="btn btn-link text-dark font-mono small text-decoration-none p-0 me-3" data-edit-id="${s.id}" data-sid="${s.student_id}" data-name="${s.fullname}" data-dob="${dobStr}" data-major="${s.major}">
-                Edit
+                Sửa
               </button>
               <button class="btn btn-link text-danger font-mono small text-decoration-none p-0" data-delete-id="${s.id}" data-sid="${s.student_id}">
-                Delete
+                Xóa
               </button>
             </td>
           </tr>
@@ -138,7 +138,7 @@ export async function render(container) {
 
       tbody.querySelectorAll('button[data-edit-id]').forEach(btn => {
         btn.addEventListener('click', () => {
-          document.getElementById('studentModalLabel').textContent = 'Edit Record #' + btn.getAttribute('data-edit-id');
+          document.getElementById('studentModalLabel').textContent = 'Chỉnh sửa sinh viên #' + btn.getAttribute('data-edit-id');
           document.getElementById('student-db-id').value = btn.getAttribute('data-edit-id');
           document.getElementById('student-code').value = btn.getAttribute('data-sid');
           document.getElementById('student-fullname').value = btn.getAttribute('data-name');
@@ -165,12 +165,12 @@ export async function render(container) {
       });
 
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger font-mono small">ERROR: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger font-mono small">LỖI: ${e.message}</td></tr>`;
     }
   }
 
   document.getElementById('btn-open-add-student')?.addEventListener('click', () => {
-    document.getElementById('studentModalLabel').textContent = 'Register New Student';
+    document.getElementById('studentModalLabel').textContent = 'Thêm sinh viên mới';
     document.getElementById('student-form').reset();
     document.getElementById('student-db-id').value = '';
     document.getElementById('student-modal-error').classList.add('d-none');
