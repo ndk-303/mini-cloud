@@ -1,4 +1,4 @@
-// Client-side interactions for MyMiniCloud Multi-Page System
+// Client-side interactions for MiniCloud Multi-Page System
 
 const KC_TOKEN_URL = '/auth/realms/master/protocol/openid-connect/token';
 const API_BASE = '/api';
@@ -16,11 +16,31 @@ function clearAuth() {
   sessionStorage.removeItem('auth');
 }
 
+function initNavHighlight() {
+  const currentPath = window.location.pathname;
+  const navLinks = document.querySelectorAll('.masthead nav a');
+
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    const href = link.getAttribute('href');
+
+    if (currentPath === '/' || currentPath === '/index.html' || currentPath.startsWith('/blog')) {
+      if (href === '/' || href === '/index.html') link.classList.add('active');
+    } else if (currentPath.includes('students')) {
+      if (href.includes('students')) link.classList.add('active');
+    } else if (currentPath.includes('tools')) {
+      if (href.includes('tools')) link.classList.add('active');
+    }
+  });
+}
+
 function updateNavAuth() {
   const auth = getAuth();
   const navAuth = document.getElementById('nav-auth');
   const addStudentBtn = document.getElementById('btn-add-student-modal');
   const adminCols = document.querySelectorAll('.admin-col');
+
+  if (!navAuth) return;
 
   if (auth) {
     const roleClass = auth.role === 'admin' ? 'admin' : '';
@@ -92,13 +112,12 @@ async function loadStudents() {
   tbody.innerHTML = `
     <tr>
       <td colspan="6" class="text-center py-4 text-muted font-mono small">
-        <span class="spinner-border spinner-border-sm me-2"></span> ĐANG TẢI DỮ LIỆU...
+        <span class="spinner-border spinner-border-sm me-2"></span> ĐANG TẢI DỮ LIỆU TỪ CSDL MARIADB...
       </td>
     </tr>
   `;
 
   try {
-    // Try fetching from database API first; if unauthenticated, fallback to public student JSON
     let res = await fetch(`${API_BASE}/students-db`, { headers });
     let students = [];
 
@@ -122,7 +141,7 @@ async function loadStudents() {
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center py-4 text-muted font-mono small">
-            CHƯA CÓ BẢN GHI SINH VIÊN NÀO.
+            CHƯA CÓ BẢN GHI SINH VIÊN NÀO TRONG MARIADB.
           </td>
         </tr>
       `;
@@ -174,9 +193,98 @@ async function loadStudents() {
   }
 }
 
+// Interactive Testers for students.html
+function initStudentTesters() {
+  const out = document.getElementById('api-test-output');
+  if (!out) return;
+
+  document.getElementById('btn-test-student-public')?.addEventListener('click', async () => {
+    out.textContent = '// Đang gửi GET /student/ ...';
+    try {
+      const res = await fetch('/student/');
+      const data = await res.json();
+      out.textContent = `// HTTP ${res.status} OK — /student/\n` + JSON.stringify(data, null, 2);
+    } catch (err) {
+      out.textContent = `// Lỗi kết nối: ${err.message}`;
+    }
+  });
+
+  document.getElementById('btn-test-student-db')?.addEventListener('click', async () => {
+    out.textContent = '// Đang gửi GET /api/students-db ...';
+    try {
+      const auth = getAuth();
+      const headers = auth?.token ? { 'Authorization': `Bearer ${auth.token}` } : {};
+      const res = await fetch(`${API_BASE}/students-db`, { headers });
+      const data = await res.json();
+      out.textContent = `// HTTP ${res.status} OK — /api/students-db\n` + JSON.stringify(data, null, 2);
+    } catch (err) {
+      out.textContent = `// Lỗi kết nối: ${err.message}`;
+    }
+  });
+}
+
+// Interactive Diagnostic Tools for tools.html
+function initDiagnosticTools() {
+  const pingBtn = document.getElementById('btn-ping-backend');
+  const pingRes = document.getElementById('ping-backend-res');
+
+  pingBtn?.addEventListener('click', async () => {
+    pingRes.textContent = '// Đang gửi ping đến /api/hello...';
+    const start = performance.now();
+    try {
+      const res = await fetch('/api/hello', { cache: 'no-store' });
+      const latency = Math.round(performance.now() - start);
+      const data = await res.json();
+      pingRes.innerHTML = `STATUS: <span class="text-success">${res.status} OK</span> | Latency: <strong>${latency}ms</strong><br>Data: ${JSON.stringify(data)}`;
+    } catch (err) {
+      pingRes.innerHTML = `<span class="text-danger">Lỗi ping: ${err.message}</span>`;
+    }
+  });
+
+  const rrBtn = document.getElementById('btn-test-round-robin');
+  const rrRes = document.getElementById('rr-test-res');
+
+  rrBtn?.addEventListener('click', async () => {
+    rrRes.innerHTML = '// Đang gửi 4 request luân phiên qua API Gateway...<br>';
+    const results = [];
+    for (let i = 1; i <= 4; i++) {
+      try {
+        const res = await fetch(`/?_t=${Date.now()}_${i}`, { cache: 'no-store' });
+        const servedBy = res.headers.get('X-Served-By') || 'web-node';
+        const upstream = res.headers.get('X-Upstream-Addr') || 'round-robin';
+        results.push(`Req #${i}: Node [${servedBy}] Upstream: ${upstream}`);
+      } catch (e) {
+        results.push(`Req #${i}: Lỗi kết nối`);
+      }
+    }
+    rrRes.innerHTML = results.map(r => `<div>${r}</div>`).join('');
+  });
+
+  const oidcBtn = document.getElementById('btn-test-oidc-doc');
+  const oidcRes = document.getElementById('oidc-test-res');
+
+  oidcBtn?.addEventListener('click', async () => {
+    oidcRes.textContent = '// Đang lấy tài liệu OpenID Configuration...';
+    try {
+      const res = await fetch('/auth/realms/master/.well-known/openid-configuration');
+      if (res.ok) {
+        const doc = await res.json();
+        oidcRes.innerHTML = `Issuer: <span class="text-success">${doc.issuer}</span><br>Token Endpoint: ${doc.token_endpoint}`;
+      } else {
+        oidcRes.innerHTML = `<span class="text-warning">HTTP ${res.status}: Không thể nạp OIDC config</span>`;
+      }
+    } catch (err) {
+      oidcRes.innerHTML = `<span class="text-danger">Lỗi: ${err.message}</span>`;
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initNavHighlight();
   updateNavAuth();
   loadStudents();
+  initStudentTesters();
+  initDiagnosticTools();
 
   // Refresh button
   document.getElementById('btn-refresh-students')?.addEventListener('click', () => {

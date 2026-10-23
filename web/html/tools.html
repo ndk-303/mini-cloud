@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniCloud – Công Cụ & Giám Sát</title>
+
+  <!-- Typography: Newsreader (Editorial Serif) + Albert Sans (UI) + JetBrains Mono (Technical) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
+    rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/modernist.css">
+</head>
+
+<body>
+
+  <!-- Masthead -->
+  <header class="masthead py-3">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <a class="masthead-brand" href="/">
+          <span>BLOG SINH VIÊN</span>
+        </a>
+        <span class="masthead-tag">HẠ TẦNG & CÔNG CỤ</span>
+      </div>
+
+      <nav class="d-flex align-items-center gap-2">
+        <a class="nav-editorial-link" href="/">Trang Chủ</a>
+        <a class="nav-editorial-link" href="/students.html">Quản Lý Sinh Viên</a>
+        <a class="nav-editorial-link active" href="/tools.html">Công Cụ & Giám Sát</a>
+      </nav>
+
+      <div class="d-flex align-items-center" id="nav-auth">
+        <button class="btn btn-modern-primary btn-modern-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container my-4 my-md-5 flex-grow-1">
+    <!-- Editorial Header Section -->
+    <section class="py-4 py-md-5 border-b-hairline mb-5">
+      <div class="row align-items-end justify-content-between g-4">
+        <div class="col-lg-9">
+          <span class="font-mono text-muted small text-uppercase d-block mb-2">03 / GIÁM SÁT HỆ THỐNG &middot; OBSERVABILITY & CLOUD INFRASTRUCTURE</span>
+          <h1 class="display-4 fw-normal font-serif mb-3" style="line-height: 1.15;">
+            Công Cụ & Giám Sát Cụm 9 Máy Chủ
+          </h1>
+          <p class="text-secondary fs-5 mb-0" style="max-width: 780px; font-weight: 400; line-height: 1.6;">
+            Trung tâm kiểm thử và giám sát trạng thái hoạt động toàn diện của mô hình 9 máy chủ điện toán đám mây MiniCloud. Tích hợp công cụ chẩn đoán trực tiếp cân bằng tải Round-Robin, đo thời gian đáp ứng API và mở nhanh các bảng điều khiển quản trị.
+          </p>
+        </div>
+        <div class="col-lg-3 text-lg-end">
+          <div class="p-3 border-hairline" style="background: var(--surface);">
+            <div class="font-mono small text-muted text-uppercase mb-1">TỔNG THỂ HẠ TẦNG</div>
+            <div class="d-flex align-items-center justify-content-lg-end gap-2">
+              <span class="badge bg-success font-mono">9/9 NODES ACTIVE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Live Diagnostic Tools -->
+    <section class="mb-5 pb-5 border-b-hairline">
+      <div class="mb-4 pb-2 border-b-hairline">
+        <span class="font-mono text-uppercase small text-muted d-block">CÔNG CỤ TỰ ĐỘNG CHẨN ĐOÁN TRỰC TIẾP (LIVE DIAGNOSTICS)</span>
+        <h2 class="h3 font-serif mt-1 mb-0">Kiểm Thử Tương Tác Trực Tuyến</h2>
+      </div>
+
+      <div class="row g-4">
+        <!-- Tool 1: Backend Ping -->
+        <div class="col-md-6 col-lg-4">
+          <div class="p-4 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">01 / KIỂM TRA BACKEND API</span>
+              <span class="badge bg-primary font-mono" style="font-size: 0.65rem;">PORT 8081</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1" style="line-height: 1.6;">
+              Gửi HTTP GET đến <code>/api/hello</code> để đo độ trễ mạng và kiểm tra phản hồi từ Python Flask.
+            </p>
+            <button class="btn btn-modern-primary btn-modern-sm w-100 mb-3" id="btn-ping-backend">
+              <i class="bi bi-activity me-1"></i> Ping Backend (/api/hello)
+            </button>
+            <div class="p-2 border-hairline bg-dark text-light font-mono small rounded-0" style="min-height: 60px;" id="ping-backend-res">
+              // Sẵn sàng kiểm tra...
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 2: Round-Robin Verifier -->
+        <div class="col-md-6 col-lg-4">
+          <div class="p-4 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">02 / CÂN BẰNG TẢI ROUND-ROBIN</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">MỞ RỘNG 10</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1" style="line-height: 1.6;">
+              Gửi 4 request liên tiếp qua API Gateway để xác minh header <code>X-Upstream-Addr</code> luân phiên qua Node 1 & Node 2.
+            </p>
+            <button class="btn btn-modern-outline btn-modern-sm w-100 mb-3" id="btn-test-round-robin">
+              <i class="bi bi-shuffle me-1"></i> Kiểm tra 4 Request Luân Phiên
+            </button>
+            <div class="p-2 border-hairline bg-dark text-light font-mono small rounded-0" style="min-height: 60px;" id="rr-test-res">
+              // Chờ kích hoạt...
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 3: Keycloak OIDC Discovery -->
+        <div class="col-md-6 col-lg-4">
+          <div class="p-4 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">03 / KEYCLOAK OIDC DISCOVERY</span>
+              <span class="badge bg-warning text-dark font-mono" style="font-size: 0.65rem;">PORT 8080</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1" style="line-height: 1.6;">
+              Truy vấn tài liệu OpenID Configuration để kiểm tra tính sẵn sàng của JWKS URI và Token Endpoint.
+            </p>
+            <button class="btn btn-modern-outline btn-modern-sm w-100 mb-3" id="btn-test-oidc-doc">
+              <i class="bi bi-shield-lock me-1"></i> Kiểm tra OIDC Discovery
+            </button>
+            <div class="p-2 border-hairline bg-dark text-light font-mono small rounded-0" style="min-height: 60px;" id="oidc-test-res">
+              // Chờ kích hoạt...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: 9 Cloud Service Cards Grid -->
+    <section class="mb-4">
+      <div class="mb-4 pb-2 border-b-hairline">
+        <span class="font-mono text-uppercase small text-muted d-block">DANH SÁCH 9 CỤM MÁY CHỦ CHUYÊN DỤNG (MINICLOUD ARCHITECTURE)</span>
+        <h2 class="h3 font-serif mt-1 mb-0">Hạ Tầng Dịch Vụ Đám Mây</h2>
+      </div>
+
+      <div class="row g-3">
+        <!-- Service 1 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">01. WEB FRONTEND CLUSTER</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 8001 / 8002</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">2 máy chủ Nginx chạy tĩnh, phân phối tải Round-Robin 1:1 theo chuẩn Mở rộng 10.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="/" class="font-mono small text-dark fw-semibold text-decoration-none">TRANG CHỦ CLOUD &rarr;</a>
+              <a href="http://localhost:8001/metrics" target="_blank" class="font-mono small text-muted text-decoration-none">/metrics &nearr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">02. APPLICATION BACKEND</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 8081</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Microservice Python Flask xử lý nghiệp vụ, CRUD sinh viên và xác thực OIDC JWT.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="/student/" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">/STUDENT/ &rarr;</a>
+              <a href="/api/hello" target="_blank" class="font-mono small text-muted text-decoration-none">/api/hello &nearr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">03. MARIADB RDBMS</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 3306</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">CSDL quan hệ lưu trữ bền vững bảng students và blogs kèm auto-seeding.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="/students.html" class="font-mono small text-dark fw-semibold text-decoration-none">QUẢN TRỊ SINH VIÊN &rarr;</a>
+              <span class="font-mono small text-muted">studentdb</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">04. KEYCLOAK IDENTITY</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 8080</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Hệ thống quản lý danh tính OIDC/OAuth2 cấp phát token JWT & phân quyền RBAC.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="/auth/" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">ADMIN CONSOLE &rarr;</a>
+              <span class="font-mono small text-muted">realm: master</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">05. OBJECT STORAGE (S3)</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 9000 / 9001</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">SeaweedFS S3-compatible Blob Storage lưu ảnh bìa bài viết và tệp đính kèm.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="http://localhost:9001/ui/index.html" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">STORAGE WEB UI &rarr;</a>
+              <span class="font-mono small text-muted">SeaweedFS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 6 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">06. INTERNAL DNS RESOLVER</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 1053</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Máy chủ Bind9 phân giải tên miền nội bộ zone <code>cloud.local</code> cho các container.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <span class="font-mono small text-dark fw-semibold">ZONE CLOUD.LOCAL</span>
+              <span class="font-mono small text-muted">UDP 53</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 7 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">07. PROMETHEUS METRICS</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 9090</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Thu thập chỉ số định kỳ (time-series) từ Node Exporter và các Web nodes.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="http://localhost:9090/targets" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">XEM TARGETS UP &rarr;</a>
+              <span class="font-mono small text-muted">100% UP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 8 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">08. GRAFANA DASHBOARD</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 3000</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Trực quan hóa tài nguyên CPU, RAM và lưu lượng mạng hệ thống thời gian thực.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="http://localhost:3000" target="_blank" class="font-mono small text-dark fw-semibold text-decoration-none">MỞ DASHBOARD &rarr;</a>
+              <span class="font-mono small text-muted">admin/admin</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service 9 -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="p-3 border-hairline h-100 d-flex flex-column" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">09. API GATEWAY PROXY</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">PORT 80</span>
+            </div>
+            <p class="small text-muted mb-3 flex-grow-1">Nginx Reverse Proxy điều hướng tập trung toàn bộ lưu lượng vào cụm đám mây.</p>
+            <div class="pt-2 border-t-hairline d-flex justify-content-between align-items-center">
+              <a href="/" class="font-mono small text-dark fw-semibold text-decoration-none">TRANG CHỦ CLOUD &rarr;</a>
+              <span class="font-mono small text-muted">Cổng chính</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: var(--bg); border: 1px solid var(--ink); border-radius: 2px;">
+        <div class="modal-header border-b-hairline d-flex justify-content-between align-items-center p-4">
+          <div>
+            <span class="font-mono text-muted small d-block mb-1">00 / XÁC THỰC DANH TÍNH OIDC</span>
+            <h4 class="h5 mb-0 fw-semibold font-serif" id="loginModalLabel">Đăng nhập tài khoản</h4>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="alert alert-danger d-none py-2 small font-mono rounded-0" id="login-error"></div>
+          <form id="login-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Tên đăng nhập</label>
+              <input type="text" class="form-control font-mono" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-password">Mật khẩu</label>
+              <input type="password" class="form-control font-mono" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-modern-primary w-100 py-2">
+              Xác thực Keycloak OIDC
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modernist Colophon Footer -->
+  <footer class="modern-footer py-4 mt-5">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="font-mono small">
+        MINICLOUD &copy; 2026 &mdash; TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG
+      </div>
+      <div class="d-flex gap-3 font-mono small">
+        <a href="/" class="text-secondary text-decoration-none">Trang Chủ</a>
+        <a href="/students.html" class="text-secondary text-decoration-none">Sinh Viên</a>
+        <a href="/tools.html" class="text-secondary text-decoration-none">Công Cụ</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+
+</html>

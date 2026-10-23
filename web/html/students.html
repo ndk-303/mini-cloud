@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniCloud – Quản Lý Sinh Viên</title>
+
+  <!-- Typography: Newsreader (Editorial Serif) + Albert Sans (UI) + JetBrains Mono (Technical) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
+    rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/modernist.css">
+</head>
+
+<body>
+
+  <!-- Masthead -->
+  <header class="masthead py-3">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <a class="masthead-brand" href="/">
+          <span>BLOG SINH VIÊN</span>
+        </a>
+        <span class="masthead-tag">CSDL & REST API</span>
+      </div>
+
+      <nav class="d-flex align-items-center gap-2">
+        <a class="nav-editorial-link" href="/">Trang Chủ</a>
+        <a class="nav-editorial-link active" href="/students.html">Quản Lý Sinh Viên</a>
+        <a class="nav-editorial-link" href="/tools.html">Công Cụ & Giám Sát</a>
+      </nav>
+
+      <div class="d-flex align-items-center" id="nav-auth">
+        <button class="btn btn-modern-primary btn-modern-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container my-4 my-md-5 flex-grow-1">
+    <!-- Editorial Header Section -->
+    <section class="py-4 py-md-5 border-b-hairline mb-5">
+      <div class="row align-items-end justify-content-between g-4">
+        <div class="col-lg-9">
+          <span class="font-mono text-muted small text-uppercase d-block mb-2">02 / TÍCH HỢP CƠ SỞ DỮ LIỆU & REST API &middot; MARIADB RDBMS</span>
+          <h1 class="display-4 fw-normal font-serif mb-3" style="line-height: 1.15;">
+            Quản Lý Danh Sách Sinh Viên
+          </h1>
+          <p class="text-secondary fs-5 mb-0" style="max-width: 780px; font-weight: 400; line-height: 1.6;">
+            Giao diện tương tác trực tiếp với cơ sở dữ liệu quan hệ MariaDB thông qua Application Backend (Flask REST API). Cho phép xem danh sách công khai và hỗ trợ phân quyền quản trị viên qua Keycloak OIDC JWT để thêm/xóa sinh viên.
+          </p>
+        </div>
+        <div class="col-lg-3 text-lg-end">
+          <div class="p-3 border-hairline" style="background: var(--surface);">
+            <div class="font-mono small text-muted text-uppercase mb-1">TRẠNG THÁI CSDL</div>
+            <div class="d-flex align-items-center justify-content-lg-end gap-2">
+              <span class="badge bg-success font-mono">MARIADB 11 UP</span>
+              <span class="font-mono small text-muted">PORT 3306</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Management Section -->
+    <section class="mb-5 pb-4 border-b-hairline">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-2 border-b-hairline">
+        <div>
+          <span class="font-mono text-uppercase small text-muted d-block">BẢNG DỮ LIỆU SINH VIÊN (MARIADB)</span>
+          <h2 class="h3 font-serif mt-1 mb-0">Hồ Sơ Sinh Viên Hiện Có</h2>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-modern-outline btn-modern-sm" id="btn-refresh-students">
+            <i class="bi bi-arrow-clockwise me-1"></i> Làm mới dữ liệu
+          </button>
+          <button class="btn btn-modern-primary btn-modern-sm d-none" id="btn-add-student-modal" data-bs-toggle="modal" data-bs-target="#studentModal">
+            <i class="bi bi-person-plus me-1"></i> + Thêm sinh viên (Admin)
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th style="width: 80px;">STT</th>
+              <th style="width: 140px;">MÃ SINH VIÊN</th>
+              <th>HỌ VÀ TÊN</th>
+              <th style="width: 140px;">NGÀY SINH</th>
+              <th style="width: 220px;">CHUYÊN NGÀNH</th>
+              <th style="width: 100px;" class="text-end admin-col d-none">THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody id="student-table-body">
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted font-mono small">
+                ĐANG TẢI DANH SÁCH TỪ CSDL MARIADB...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 2: Interactive API Tester & Documentation -->
+    <section class="mb-5">
+      <div class="mb-4 pb-2 border-b-hairline">
+        <span class="font-mono text-uppercase small text-muted d-block">TÀI LIỆU KỸ THUẬT & TRÌNH KIỂM THỬ TRỰC TIẾP</span>
+        <h3 class="h4 font-serif mt-1 mb-0">Đặc Tả REST API Sinh Viên & Tra Cứu</h3>
+      </div>
+
+      <div class="row g-4">
+        <!-- Live Tester Card -->
+        <div class="col-lg-6">
+          <div class="p-4 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">TRÌNH KIỂM THỬ API TRỰC TIẾP</span>
+              <span class="badge border-hairline font-mono" style="background: var(--bg-alt);">LIVE TEST</span>
+            </div>
+            <p class="small text-muted mb-3" style="line-height: 1.6;">
+              Kiểm thử phản hồi JSON thực tế từ các endpoint backend mà không cần mở Postman hay Terminal.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-modern-outline btn-modern-sm" id="btn-test-student-public">
+                GET /student/ (Mở rộng 9)
+              </button>
+              <button class="btn btn-modern-outline btn-modern-sm" id="btn-test-student-db">
+                GET /api/students-db (MariaDB)
+              </button>
+            </div>
+            <div class="p-3 border-hairline bg-dark text-light font-mono small rounded-0" style="max-height: 240px; overflow-y: auto;" id="api-test-output">
+// Nhấn vào một trong các nút kiểm thử phía trên để xem kết quả JSON trực tiếp...
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentation Card -->
+        <div class="col-lg-6">
+          <div class="p-4 border-hairline h-100" style="background: var(--surface);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="font-mono small text-uppercase fw-semibold text-dark">DANH SÁCH ENDPOINTS CHUẨN</span>
+              <span class="badge bg-success font-mono" style="font-size: 0.65rem;">HTTP 200</span>
+            </div>
+            <ul class="list-unstyled mb-0 font-mono small" style="line-height: 1.8;">
+              <li class="mb-2 pb-2 border-b-hairline">
+                <span class="badge bg-primary text-white me-2">GET</span>
+                <strong>/student/</strong> &mdash; Trả về JSON danh sách sinh viên chuẩn theo yêu cầu Mở rộng 9.
+              </li>
+              <li class="mb-2 pb-2 border-b-hairline">
+                <span class="badge bg-primary text-white me-2">GET</span>
+                <strong>/api/students-db</strong> &mdash; Lấy toàn bộ bản ghi thực tế từ bảng <code>students</code> trong MariaDB.
+              </li>
+              <li class="mb-2 pb-2 border-b-hairline">
+                <span class="badge bg-success text-white me-2">POST</span>
+                <strong>/api/students-db</strong> &mdash; Thêm sinh viên mới (Yêu cầu Header <code>Authorization: Bearer &lt;admin_jwt&gt;</code>).
+              </li>
+              <li>
+                <span class="badge bg-danger text-white me-2">DELETE</span>
+                <strong>/api/students-db/&lt;id&gt;</strong> &mdash; Xóa sinh viên theo ID (Chỉ tài khoản quyền Admin thực hiện).
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: var(--bg); border: 1px solid var(--ink); border-radius: 2px;">
+        <div class="modal-header border-b-hairline d-flex justify-content-between align-items-center p-4">
+          <div>
+            <span class="font-mono text-muted small d-block mb-1">00 / XÁC THỰC DANH TÍNH OIDC</span>
+            <h4 class="h5 mb-0 fw-semibold font-serif" id="loginModalLabel">Đăng nhập tài khoản</h4>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="alert alert-danger d-none py-2 small font-mono rounded-0" id="login-error"></div>
+          <form id="login-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-username">Tên đăng nhập</label>
+              <input type="text" class="form-control font-mono" id="login-username" placeholder="Ví dụ: SV001 hoặc admin" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-uppercase font-mono" for="login-password">Mật khẩu</label>
+              <input type="password" class="form-control font-mono" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-modern-primary w-100 py-2">
+              Xác thực Keycloak OIDC
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Add Modal (Admin Only) -->
+  <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: var(--bg); border: 1px solid var(--ink); border-radius: 2px;">
+        <div class="modal-header border-b-hairline d-flex justify-content-between align-items-center p-4">
+          <div>
+            <span class="font-mono text-muted small d-block mb-1">02 / QUẢN TRỊ MARIADB</span>
+            <h4 class="h5 mb-0 fw-semibold font-serif" id="studentModalLabel">Thêm sinh viên mới</h4>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="student-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">MÃ SINH VIÊN</label>
+              <input type="text" class="form-control font-mono" id="st-id" placeholder="Ví dụ: SV006" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">HỌ VÀ TÊN</label>
+              <input type="text" class="form-control font-sans" id="st-name" placeholder="Ví dụ: Đỗ Thị Mai" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold font-mono">NGÀY SINH</label>
+              <input type="date" class="form-control font-mono" id="st-dob" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold font-mono">CHUYÊN NGÀNH</label>
+              <input type="text" class="form-control font-sans" id="st-major" placeholder="Ví dụ: Cloud Architecture" required>
+            </div>
+            <button type="submit" class="btn btn-modern-primary w-100 py-2">
+              Lưu vào CSDL MariaDB
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modernist Colophon Footer -->
+  <footer class="modern-footer py-4 mt-5">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="font-mono small">
+        MINICLOUD &copy; 2026 &mdash; TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG
+      </div>
+      <div class="d-flex gap-3 font-mono small">
+        <a href="/" class="text-secondary text-decoration-none">Trang Chủ</a>
+        <a href="/students.html" class="text-secondary text-decoration-none">Sinh Viên</a>
+        <a href="/tools.html" class="text-secondary text-decoration-none">Công Cụ</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+
+</html>
