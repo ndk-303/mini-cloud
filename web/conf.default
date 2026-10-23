@@ -9,15 +9,20 @@ server {
 
   # 1. Root trang chủ & các tài nguyên tĩnh
   location / {
-    try_files $uri $uri/ =404;
+    try_files $uri $uri.html $uri/ =404;
     add_header Cache-Control "no-cache";
     add_header X-Served-By $hostname always;
   }
 
-  # 2. Phân hệ Blog cá nhân tĩnh (Mở rộng 1 - Đúng 100% đề bài)
+  # 2. Phân hệ Blog cá nhân tĩnh (Chuyển hướng /blog/ về Trang chủ, phục vụ trực tiếp các bài viết con)
+  location = /blog/ {
+    return 301 /;
+  }
+  location = /blog {
+    return 301 /;
+  }
   location ^~ /blog/ {
     alias /usr/share/nginx/html/blog/;
-    index index.html;
     autoindex off;
     add_header Cache-Control "no-cache";
     add_header X-Served-By $hostname always;
