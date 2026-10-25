@@ -3,7 +3,7 @@ networks:
     name: cloud-net
 
 services:
-  # ── 1a. Web Frontend Instance 1 (Cluster Node 1, Direct Port 8001) ──────────
+  # ── 1a. Web Frontend Instance 1 ──────────
   web-frontend-server1:
     build: ./web
     image: ${DOCKER_USER:-hotensv}/minicloud-web:latest
@@ -21,9 +21,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 48M
 
-  # ── 1b. Web Frontend Instance 2 (Cluster Node 2, Direct Port 8002) ──────────
+  # ── 1b. Web Frontend Instance 2 ──────────
   web-frontend-server2:
     build: ./web
     image: ${DOCKER_USER:-hotensv}/minicloud-web:latest
@@ -37,9 +37,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 48M
 
-  # ── 2. Application Backend (Custom Image, 1:1 Port 8081) ────────────────────
+  # ── 2. Application Backend ────────────────────
   application-backend-server:
     build: ./app
     image: ${DOCKER_USER:-hotensv}/minicloud-app:latest
@@ -57,9 +57,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 96M
 
-  # ── 3. Relational Database (Official Image) ─────────────────────────────────
+  # ── 3. Relational Database ─────────────────────────────────
   relational-database-server:
     image: mariadb:11
     container_name: relational-database-server
@@ -84,9 +84,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
-
-  # ── 4. Authentication / Identity (Official Image) ───────────────────────────
+          memory: 180M
+  # ── 4. Authentication / Identity ───────────────────────────
   authentication-identity-server:
     image: quay.io/keycloak/keycloak:latest
     container_name: authentication-identity-server
@@ -97,7 +96,7 @@ services:
       KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
-      JAVA_OPTS_APPEND: "-Xms64m -Xmx384m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
+      JAVA_OPTS_APPEND: "-Xms64m -Xmx256m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=192m"
     ports: ["8080:8080"]
     restart: unless-stopped
     networks:
@@ -107,9 +106,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 600M
+          memory: 512M
 
-  # ── 5. Object Storage (SeaweedFS S3-Compatible Storage) ─────────────────────
+  # ── 5. Object Storage +─────────────────────
   object-storage-server:
     image: chrislusf/seaweedfs:latest
     container_name: object-storage-server
@@ -125,9 +124,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 80M
+          memory: 64M
 
-  # ── 6. Internal DNS (Official Image) ────────────────────────────────────────
+  # ── 6. Internal DNS ────────────────────────────────────────
   internal-dns-server:
     image: internetsystemsconsortium/bind9:9.18
     container_name: internal-dns-server
@@ -145,9 +144,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 48M
 
-  # ── 7a. Monitoring Agent (Official Image) ───────────────────────────────────
+  # ── 7a. Monitoring Agent ───────────────────────────────────
   monitoring-node-exporter-server:
     image: prom/node-exporter:latest
     container_name: monitoring-node-exporter-server
@@ -162,7 +161,7 @@ services:
         limits:
           memory: 32M
 
-  # ── 7b. Monitoring Server (Official Image) ───────────────────────────────────
+  # ── 7b. Monitoring Server ───────────────────────────────────
   monitoring-prometheus-server:
     image: prom/prometheus:latest
     container_name: monitoring-prometheus-server
@@ -170,7 +169,7 @@ services:
       "--config.file=/etc/prometheus/prometheus.yml",
       "--storage.tsdb.path=/prometheus",
       "--storage.tsdb.retention.time=2d",
-      "--storage.tsdb.retention.size=500MB"
+      "--storage.tsdb.retention.size=256MB"
     ]
     ports: ["9090:9090"]
     volumes:
@@ -183,9 +182,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 112M
 
-  # ── 8. Visualization (Official Image) ───────────────────────────────────────
+  # ── 8. Visualization ───────────────────────────────────────
   monitoring-grafana-dashboard-server:
     image: grafana/grafana:latest
     container_name: monitoring-grafana-dashboard-server
@@ -200,9 +199,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 112M
 
-  # ── 9. API Gateway / Reverse Proxy (Custom Image hoặc Official) ─────────────
+
+  # ── 9. API Gateway / Reverse Proxy ─────────────
   api-gateway-proxy-server:
     build: ./proxy
     image: ${DOCKER_USER:-hotensv}/minicloud-proxy:latest
@@ -220,4 +220,4 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 48M
