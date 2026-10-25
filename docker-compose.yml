@@ -95,7 +95,7 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
-      JAVA_OPTS_APPEND: "-Xms64m -Xmx288m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
+      JAVA_OPTS_APPEND: "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx288m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
     ports: ["8080:8080"]
     restart: unless-stopped
     networks:
