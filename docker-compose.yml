@@ -93,10 +93,9 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
-      JAVA_OPTS_APPEND: "-Xms64m -Xmx256m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=192m"
+      JAVA_OPTS_APPEND: "-Xms64m -Xmx288m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m"
     ports: ["8080:8080"]
     restart: unless-stopped
     networks:
@@ -106,7 +105,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 580M
 
   # ── 5. Object Storage +─────────────────────
   object-storage-server:
@@ -188,6 +187,7 @@ services:
   monitoring-grafana-dashboard-server:
     image: grafana/grafana:latest
     container_name: monitoring-grafana-dashboard-server
+    user: "0"
     ports: ["3000:3000"]
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -199,7 +199,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 112M
+          memory: 180M
 
 
   # ── 9. API Gateway / Reverse Proxy ─────────────

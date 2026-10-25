@@ -101,9 +101,9 @@ Yêu cầu Client: http://localhost (Port 80)
 
 Hệ thống được tối ưu đặc biệt để chạy mượt 11 containers trên máy chủ **AWS EC2 t2.micro (1 vCPU, 1GB RAM)**:
 1. **SeaweedFS thay MinIO:** Tiết kiệm ~200MB RAM (chỉ dùng ~40MB RAM).
-2. **Kìm hãm JVM Keycloak Quarkus:** `-Xms64m -Xmx256m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=192m`.
+2. **Kìm hãm JVM Keycloak Quarkus:** `-Xms64m -Xmx288m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m`.
 3. **Kìm hãm MariaDB:** `performance_schema=OFF`, `innodb_buffer_pool_size=64M`, `max_connections=20`.
-4. **Giới hạn cứng Docker (`deploy.resources.limits.memory`):** Web (48M x 2), App (96M), DB (180M), Keycloak (512M), SeaweedFS (64M), Bind9 (48M), Node Exporter (32M), Prometheus (112M), Grafana (112M), Proxy (48M) -> Tổng trần: 1296M.
+4. **Giới hạn cứng Docker (`deploy.resources.limits.memory`):** Web (48M x 2), App (96M), DB (180M), Keycloak (580M), SeaweedFS (64M), Bind9 (48M), Node Exporter (32M), Prometheus (112M), Grafana (180M), Proxy (48M).
 5. **Linux Swap Space:** Tạo swap file 2GB trên Ubuntu EC2 làm bộ nhớ đệm chống lỗi OOM.
 
 ---
