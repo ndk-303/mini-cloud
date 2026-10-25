@@ -108,17 +108,18 @@ Hệ thống được tối ưu đặc biệt để chạy mượt 11 containers
 
 ---
 
-## 8. TỰ ĐỘNG HÓA CI/CD (.github/workflows/deploy.yml)
+## 8. TỰ ĐỘNG HÓA CI (BUILD & PUSH DOCKER HUB) (.github/workflows/deploy.yml)
 
-Kích hoạt khi push commit lên nhánh `main`:
-1. **Job 1 (Build & Push Docker Hub):** Build đồng thời 3 custom images:
+Kích hoạt khi push commit lên nhánh `main` hoặc chạy thủ công (`workflow_dispatch`):
+1. **Build & Push Docker Hub:** Build tự động 3 custom images trên GitHub runner và push lên Docker Hub:
    * `${DOCKERHUB_USERNAME}/minicloud-web:latest`
    * `${DOCKERHUB_USERNAME}/minicloud-app:latest`
    * `${DOCKERHUB_USERNAME}/minicloud-proxy:latest`
-2. **Job 2 (Deploy to EC2):**
-   * SSH vào máy chủ AWS EC2 qua SSH Key (`EC2_SSH_KEY`).
-   * Đồng bộ `docker-compose.yml` và thư mục config.
-   * Chạy `docker compose pull && docker compose up -d --remove-orphans`.
+2. **Triển khai thủ công trên EC2:**
+   * Sau khi CI build xong, trên máy chủ EC2 chỉ cần chạy:
+     ```bash
+     docker compose pull && docker compose up -d --remove-orphans
+     ```
 
 ---
 

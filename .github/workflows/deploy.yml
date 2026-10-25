@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - MiniCloud
+name: Build & Push Docker Images
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── JOB 1: BUILD & PUSH DOCKER IMAGES ──────────────────────────────────────
+  # ── BUILD & PUSH DOCKER IMAGES TO DOCKER HUB ───────────────────────────────
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -43,38 +43,3 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/minicloud-proxy:latest
 
-
-  # ── JOB 2: DEPLOY TO AWS EC2 ────────────────────────────────────────────────
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup SSH Key & Deploy to EC2
-        env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER || 'ubuntu' }}
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-        run: |
-          mkdir -p ~/.ssh
-
-          # 1. Ghi private key
-          printf "%s\n" "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          # 2. Thêm host vào known_hosts
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
-
-          # 3. Tạo thư mục đích trên EC2 và ghi file .env
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p ~/minicloud && echo 'DOCKER_USER=$DOCKERHUB_USER' > ~/minicloud/.env"
-
-          # 4. Tự động copy docker-compose.yml và các thư mục config/volume sang EC2
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy storage "$USER@$HOST:~/minicloud/" 2>/dev/null || \
-          scp -i ~/.ssh/id_rsa -r docker-compose.yml web db dns grafana monitor proxy "$USER@$HOST:~/minicloud/"
-
-          # 5. Thực hiện pull image và khởi chạy toàn bộ 9 servers (bao gồm Round-Robin cluster)
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$USER@$HOST" "cd ~/minicloud && sudo systemctl start docker || true && docker compose pull && docker compose up -d --remove-orphans"
