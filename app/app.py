@@ -327,7 +327,8 @@ def upload_image():
             f, S3_BUCKET, key,
             ExtraArgs={"ContentType": f.content_type or "application/octet-stream"}
         )
-        url = f"http://localhost:9000/{S3_BUCKET}/{key}"
+        client_host = request.headers.get("X-Forwarded-Host") or request.host.split(":")[0]
+        url = f"http://{client_host}:9000/{S3_BUCKET}/{key}"
         return jsonify(url=url)
     except Exception as e:
         return jsonify(error=f"Upload failed: {e}"), 503

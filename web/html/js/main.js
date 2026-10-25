@@ -279,9 +279,45 @@ function initDiagnosticTools() {
   });
 }
 
+// Tự động chuyển đổi các đường dẫn công cụ (localhost:port) sang IP hoặc hostname của server EC2 hiện tại
+function updateDynamicHostLinks() {
+  const currentHost = window.location.hostname;
+  if (!currentHost || currentHost === 'localhost' || currentHost === '127.0.0.1') return;
+
+  document.querySelectorAll('a[href*="localhost"]').forEach(link => {
+    try {
+      const url = new URL(link.href);
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        url.hostname = currentHost;
+        link.href = url.toString();
+      }
+    } catch (e) {
+      console.error('Lỗi cập nhật URL công cụ:', e);
+    }
+  });
+}
+
+// Bắt sự kiện click để đảm bảo kể cả khi link chưa được thay thế vẫn trỏ đúng host hiện tại
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[href*="localhost"]');
+  if (link) {
+    const currentHost = window.location.hostname;
+    if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      try {
+        const url = new URL(link.href);
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          url.hostname = currentHost;
+          link.href = url.toString();
+        }
+      } catch (err) {}
+    }
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   initNavHighlight();
   updateNavAuth();
+  updateDynamicHostLinks();
   loadStudents();
   initStudentTesters();
   initDiagnosticTools();
