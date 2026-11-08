@@ -243,19 +243,19 @@ def main() -> None:
         STOP_SAMPLING.set()
         sampler.join(timeout=3)
 
-    print("\nBảng RAM (MiB): idle là trung bình 5 mẫu; có tải là mức cao nhất ghi nhận.")
-    print(f"{'Nhóm dịch vụ':<27} {'Không tải':>12} {'Có tải':>12}")
+    print("\nRAM consumption by service group (MiB)")
+    print(f"{'Service Group':<27} {'Idle Avg (MiB)':>16} {'Under Load Peak (MiB)':>23}")
     for group, containers in GROUPS.items():
         idle = grouped_value(idle_average, containers)
         loaded = grouped_value(PEAK_MEMORY, containers)
         idle_text = f"{idle:.1f}" if idle is not None else "N/A"
         loaded_text = f"{loaded:.1f}" if loaded is not None else "N/A"
-        print(f"{group:<27} {idle_text:>12} {loaded_text:>12}")
+        print(f"{group:<27} {idle_text:>16} {loaded_text:>23}")
 
-    print("\nKết quả tải:")
+    print("\nWorkload request results:")
     for name, counts in results.items():
         print(f"{name:<22} {dict(counts)}")
-    print("\nGhi chú: thêm hàng Node Exporter vào Bảng 4.8 hoặc gộp vào nhóm Prometheus.")
+    print("\nNote: add a Node Exporter row to Table 4.8, or combine it with Prometheus.")
 
 
 if __name__ == "__main__":
