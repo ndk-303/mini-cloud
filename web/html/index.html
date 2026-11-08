@@ -202,6 +202,27 @@
         </div>
       </div>
     </section>
+    <section class="container py-5" id="community-publishing">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 border-bottom pb-3 mb-4">
+        <div>
+          <span class="font-mono small text-muted">04 / CỘNG ĐỒNG</span>
+          <h2 class="font-serif mb-1">Bài viết sinh viên</h2>
+          <p class="text-secondary mb-0">Chia sẻ ghi chú và hình ảnh học tập.</p>
+        </div>
+        <button class="btn btn-modern-primary btn-modern-sm" id="btn-open-post">Đăng bài viết</button>
+      </div>
+      <div id="post-composer" class="border-hairline p-4 mb-4 d-none" style="background:var(--surface)">
+        <form id="post-form">
+          <div class="mb-3"><label class="form-label font-mono small" for="post-title">TIÊU ĐỀ</label><input class="form-control" id="post-title" maxlength="160" required></div>
+          <div class="mb-3"><label class="form-label font-mono small" for="post-content">NỘI DUNG</label><textarea class="form-control" id="post-content" rows="5" maxlength="12000" required></textarea></div>
+          <div class="mb-3"><label class="form-label font-mono small" for="post-image">ẢNH MINH HỌA</label><input class="form-control" id="post-image" type="file" accept="image/png,image/jpeg,image/webp" required><div class="form-text">Chọn ảnh PNG, JPG hoặc WebP (tối đa 5 MB).</div></div>
+          <div id="post-message" class="small mb-3" role="status"></div>
+          <button class="btn btn-modern-primary" id="post-submit" type="submit">Tải ảnh và đăng bài</button>
+          <button class="btn btn-modern-outline ms-2" id="post-cancel" type="button">Hủy</button>
+        </form>
+      </div>
+      <div id="community-posts" class="row g-4" aria-live="polite"></div>
+    </section>
   </main>
 
   <!-- Login Modal -->

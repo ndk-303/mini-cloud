@@ -297,6 +297,68 @@ function updateDynamicHostLinks() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+async function loadCommunityPosts() {
+  const list = document.getElementById('community-posts');
+  if (!list) return;
+  try {
+    const res = await fetch(`${API_BASE}/blogs`, {cache:'no-store'});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const posts = await res.json();
+    list.innerHTML = posts.length ? posts.map(post => `
+      <article class="col-md-6 col-lg-4"><div class="p-3 border-hairline h-100 d-flex flex-column" style="background:var(--surface)">
+        ${post.image_url ? `<div class="article-img-frame mb-3" style="height:200px"><img src="${escapeHtml(post.image_url)}" alt="Ảnh minh họa bài ${escapeHtml(post.title)}" loading="lazy"></div>` : ''}
+        <div class="article-meta mb-2">${escapeHtml(post.author_id || 'SINH VIÊN')}</div>
+        <h3 class="h4 font-serif">${escapeHtml(post.title)}</h3><p class="text-secondary small" style="white-space:pre-wrap">${escapeHtml(post.content)}</p>
+      </div></article>`).join('') : '<p class="text-secondary">Chưa có bài viết cộng đồng.</p>';
+  } catch (err) {
+    list.innerHTML = '<p class="text-secondary">Chưa tải được bài viết. Hãy thử tải lại trang.</p>';
+    console.error('Không tải được bài viết:', err);
+  }
+}
+
+function initPostComposer() {
+  const composer = document.getElementById('post-composer');
+  const form = document.getElementById('post-form');
+  if (!composer || !form) return;
+  document.getElementById('btn-open-post')?.addEventListener('click', () => {
+    if (!getAuth()?.token) {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+      return;
+    }
+    composer.classList.remove('d-none');
+    document.getElementById('post-title').focus();
+  });
+  document.getElementById('post-cancel')?.addEventListener('click', () => { form.reset(); composer.classList.add('d-none'); });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const auth = getAuth();
+    const file = document.getElementById('post-image').files[0];
+    const message = document.getElementById('post-message');
+    const button = document.getElementById('post-submit');
+    if (!auth?.token) { message.textContent = 'Vui lòng đăng nhập trước khi đăng bài.'; return; }
+    if (!file || !['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 5*1024*1024) {
+      message.textContent = 'Chọn ảnh PNG, JPG hoặc WebP có dung lượng tối đa 5 MB.'; return;
+    }
+    button.disabled = true; message.textContent = 'Đang tải ảnh lên Object Storage…';
+    try {
+      const upload = new FormData(); upload.append('file', file);
+      const upRes = await fetch(`${API_BASE}/upload`, {method:'POST', headers:{Authorization:`Bearer ${auth.token}`}, body:upload});
+      const upData = await upRes.json().catch(()=>({}));
+      if (!upRes.ok) throw new Error(upData.error || `Upload ảnh thất bại (HTTP ${upRes.status})`);
+      message.textContent = 'Ảnh đã tải lên. Đang lưu bài viết…';
+      const postRes = await fetch(`${API_BASE}/blogs`, {method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${auth.token}`}, body:JSON.stringify({title:document.getElementById('post-title').value.trim(),content:document.getElementById('post-content').value.trim(),image_url:upData.url})});
+      const postData = await postRes.json().catch(()=>({}));
+      if (!postRes.ok) throw new Error(postData.error || `Đăng bài thất bại (HTTP ${postRes.status})`);
+      form.reset(); composer.classList.add('d-none'); message.textContent=''; await loadCommunityPosts();
+    } catch (err) { message.textContent = err.message; }
+    finally { button.disabled=false; }
+  });
+}
+
 // Bắt sự kiện click để đảm bảo kể cả khi link chưa được thay thế vẫn trỏ đúng host hiện tại
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a[href*="localhost"]');
@@ -318,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavHighlight();
   updateNavAuth();
   updateDynamicHostLinks();
+  initPostComposer();
+  loadCommunityPosts();
   loadStudents();
   initStudentTesters();
   initDiagnosticTools();
