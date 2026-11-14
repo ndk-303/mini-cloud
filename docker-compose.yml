@@ -204,7 +204,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 48M
+          memory: 128M
 
   # ── 7a. Monitoring Agent ───────────────────────────────────
   monitoring-node-exporter-server:
@@ -260,7 +260,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
 
 
   # ── 9. API Gateway / Reverse Proxy ─────────────

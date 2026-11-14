@@ -1,27 +1,12 @@
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*$py.class
-
-# MinIO data volume
+.env
 storage/data/*
 !storage/data/.gitkeep
-
-# Environment & local credentials
-.env
 *.pem
 *.key
-
-# OS / Editor files
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.log
-
-# Course report files
-Báo Cáo Cuối Kỳ.md
-BAO_CAO_CUOI_KY_HOAN_CHINH.md
-docs/
-.superpowers/
-
