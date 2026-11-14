@@ -49,7 +49,7 @@ def get_s3():
         endpoint_url=S3_ENDPOINT,
         aws_access_key_id=S3_ACCESS,
         aws_secret_access_key=S3_SECRET,
-        # SeaweedFS may need several seconds after container start or recovery.
+        # Object storage may need several seconds after container start or recovery.
         # Retry transient connection failures instead of failing the UI upload immediately.
         config=Config(
             signature_version="s3v4",

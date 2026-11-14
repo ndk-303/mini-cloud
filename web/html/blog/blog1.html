@@ -90,7 +90,7 @@
 
       <h2 class="h4 font-serif mt-4 mb-3">2. Ứng dụng thực tế trong cụm MiniCloud</h2>
       <p>
-        Trong đồ án mô phỏng MiniCloud, chúng tôi đã đóng gói toàn bộ 9 server thành các container độc lập kết nối chung mạng ảo <code>cloud-net</code>. Nhờ tối ưu giới hạn bộ nhớ qua directive <code>deploy.resources.limits.memory</code>, toàn bộ 11 containers bao gồm MariaDB, Keycloak, Prometheus, Grafana và SeaweedFS S3 có thể vận hành mượt mà trên máy chủ AWS EC2 gói miễn phí 1GB RAM.
+        Trong đồ án mô phỏng MiniCloud, chúng tôi đã đóng gói 9 loại server thành 11 container chạy thường trực trên mạng <code>cloud-net</code>. Các dịch vụ gồm MariaDB, Keycloak, Prometheus, Grafana và MinIO S3. Cấu hình bộ nhớ trong Compose cùng swap hỗ trợ chạy trên EC2 1GB RAM.
       </p>
 
       <div class="code-block">

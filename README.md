@@ -1,6 +1,6 @@
 # MyMiniCloud – Cloud Simulation Platform
 
-Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net`, điều phối qua `docker-compose.yml` và cân bằng tải giữa **2 web node**. GitHub Actions hiện build/push image; EC2 được triển khai thủ công.
+Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net`, điều phối qua `docker-compose.yml` và cân bằng tải giữa **2 web node**. Có thể chạy trên local hoặc triển khai thủ công lên EC2.
 
 ---
 
@@ -27,16 +27,14 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 ```text
 .
 ├── app/                  # Custom Backend Flask API, students.json, setup_keycloak.py (có Dockerfile)
-├── auth/                 # Keycloak identity volume (.gitkeep)
 ├── db/                   # MariaDB init scripts và migration (001–003)
 ├── dns/                  # Bind9 DNS configs & db.cloud.local zone
-├── grafana/              # Grafana dashboards (.gitkeep)
+├── grafana/              # Grafana datasource và dashboard provisioning
 ├── monitor/              # Prometheus config (prometheus.yml)
 ├── proxy/                # Custom Gateway Nginx Dynamic DNS (có Dockerfile)
 ├── storage/              # MinIO Object Storage volume data
 ├── web/                  # Custom Web Frontend HTML & 3 Blog posts (có Dockerfile)
-├── .github/workflows/    # Pipeline CI/CD tự động (deploy.yml)
-├── docker-compose.yml    # File điều phối toàn bộ 9 services
+├── docker-compose.yml    # File điều phối các service
 ├── .env.example          # Mẫu cấu hình biến môi trường
 └── README.md
 ```
@@ -73,16 +71,9 @@ curl -I http://localhost/
 
 ---
 
-## Build image bằng GitHub Actions, deploy EC2 thủ công
+## Triển khai EC2
 
-Mỗi lần `git push origin main`:
-1. GitHub Actions build 3 custom images (`web`, `app`, `proxy`) và push lên Docker Hub.
-2. Trên EC2, đồng bộ repository cùng `.env`, rồi chạy `docker compose up -d --build`. Workflow hiện chưa tự SSH/deploy lên EC2.
-
-### Cấu hình Secrets trên GitHub Repo:
-Vào **Settings > Secrets and variables > Actions**:
-* `DOCKERHUB_USERNAME`: Tên tài khoản Docker Hub.
-* `DOCKERHUB_TOKEN`: Personal Access Token trên Docker Hub (quyền *Read & Write*).
+Đồng bộ repository và `.env` lên EC2, sau đó chạy `docker compose up -d --build`. Ba image tùy chỉnh (`web`, `app`, `proxy`) được build từ Dockerfile trong repository.
 
 ---
 
