@@ -182,7 +182,13 @@ services:
       - ./storage/init-minio.sh:/init-minio.sh:ro
       - ./storage/avatar.jpg:/seed/avatar.jpg:ro
       - ./storage/sample-report.pdf:/seed/sample-report.pdf:ro
-    entrypoint: ["/bin/sh", "/init-minio.sh"]
+    # Bind-mounted shell scripts can retain CRLF after a pull on Windows.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        tr -d '\r' < /init-minio.sh > /tmp/init-minio.sh
+        exec /bin/sh /tmp/init-minio.sh
     networks: [cloud-net]
     restart: "no"
 
