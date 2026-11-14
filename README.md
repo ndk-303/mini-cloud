@@ -112,130 +112,80 @@ Hai service setup kết thúc với trạng thái `Exited (0)` là bình thườ
 
 ---
 
-## 🧪 Danh Sách Kiểm Thử Các Dịch Vụ (Endpoints)
+## Chạy và demo (Windows, macOS, Linux)
 
-| Dịch vụ | Đường dẫn truy cập | Kết quả kiểm thử kỳ vọng |
-| :--- | :--- | :--- |
-| **Web App (Student Blog)** | `http://<IP_EC2>/` | Giao diện Web App Blog Sinh Viên hoàn chỉnh (SPA, Load-balanced) |
-| **Blog API (Public)** | `http://<IP_EC2>/api/blogs` | Danh sách bài blog (JSON) từ MariaDB |
-| **Chi tiết blog** | `http://<IP_EC2>/api/blogs/1` | Một bài blog, gồm `created_at` và `updated_at` |
-| **Upload Ảnh (S3)** | `POST http://<IP_EC2>/api/upload` | Upload ảnh lên MinIO S3 (Yêu cầu JWT) |
-| **Xem ảnh đã upload** | `http://<IP_EC2>/api/uploads/<key>` | Trình duyệt đọc ảnh qua API Gateway; URL này được trả về sau upload |
-| **API Hello** | `http://<IP_EC2>/api/hello` | Trả về JSON `{"message": "Hello from App Server!"}` |
-| **API Sinh viên (JSON)** | `http://<IP_EC2>/student/` | Danh sách 5 sinh viên từ `students.json` |
-| **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Quản lý sinh viên trên MariaDB `studentdb` (Yêu cầu Role `admin`) |
-| **Keycloak Admin** | `http://<IP_EC2>:8080` | Đăng nhập Admin Console (`admin` / `admin`) hoặc qua Proxy `http://<IP_EC2>/auth/` |
-| **MinIO S3 API** | `http://<IP_EC2>:9000` | Cổng API S3 tạo Bucket & Upload File |
-| **MinIO Web UI** | `http://<IP_EC2>:9001` | MinIO Console xem bucket và object |
-| **Prometheus** | `http://<IP_EC2>:9090` | Quản lý metrics hệ thống, xem trạng thái targets UP |
-| **Grafana** | `http://<IP_EC2>:3000` | Dashboard biểu đồ CPU, RAM, Network (`admin` / `admin`) |
-| **Internal DNS** | Port UDP `1053` | Phân giải `web-frontend-server.cloud.local` |
+Chạy tại thư mục chứa `docker-compose.yml`. Sao chép `.env.example` thành `.env` nếu chưa có, rồi đặt `KEYCLOAK_REALM=realm_<MSSV>` và `DOCKER_USER=<Docker_Hub_username>`. Các mật khẩu demo và MinIO có giá trị mặc định trong Compose. Thay `storage/sample-report.pdf` bằng báo cáo thật nếu cần trình bày file của bạn.
 
-## Hướng dẫn chạy và demo đầy đủ trên local (Windows PowerShell)
-
-Chạy các lệnh tại thư mục chứa `docker-compose.yml`. Máy cần có Docker Desktop đang chạy. Không dừng hoặc xóa toàn bộ container trên máy; nếu trùng cổng hoặc `container_name`, chỉ xử lý container gây xung đột.
-
-### Bước 1 — Cấu hình và khởi động
-
-```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-notepad .env
-```
-
-Thêm vào `.env` (thay MSSV và mật khẩu demo theo ý bạn):
-
-```dotenv
-DOCKER_USER=<Docker_Hub_username>
-KEYCLOAK_REALM=realm_<MSSV>
-SV01_PASSWORD=student123
-SV02_PASSWORD=student123
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin
-```
-
-Mặc định nếu không khai báo `KEYCLOAK_REALM` là `realm_SV001`. MinIO dùng image cộng đồng được build từ mã nguồn MinIO vì image Docker Hub cũ không còn pull được. File `storage/sample-report.pdf` là PDF mẫu nhỏ; thay bằng báo cáo thật trước buổi demo nếu giảng viên yêu cầu.
-
-```powershell
+```sh
 docker compose config --quiet
 docker compose up -d --build
 docker compose ps -a
 docker compose logs --tail=30 keycloak-bootstrap minio-bootstrap db-schema-migration
 ```
 
-Lần chạy đầu, Keycloak có thể mất vài phút để khởi tạo. Chỉ tiếp tục khi `api-gateway-proxy-server` là `Up` và ba service `keycloak-bootstrap`, `minio-bootstrap`, `db-schema-migration` đều là `Exited (0)`. Nếu một service là `Exited (1)`, đọc log của service đó; sau khi sửa lỗi, chạy lại `docker compose up -d --build`.
+Keycloak có thể mất vài phút ở lần chạy đầu. Chờ gateway ở trạng thái `Up`; ba service bootstrap/migration phải là `Exited (0)`. Nếu một service lỗi, xem `docker compose logs <service>`, rồi chạy lại `docker compose up -d --build`. Các URL dưới đây dùng `localhost`; khi xem từ máy khác, thay bằng IP/DNS của EC2. Trên Windows PowerShell, dùng `curl.exe` thay cho `curl` trong ví dụ.
 
-### Bước 2 — Demo 10 yêu cầu mặc định
+### 10 mục mặc định
 
-| # | Thao tác | Kết quả cần thấy |
+| # | Demo | Kết quả cần thấy |
 |---|---|---|
-| 1. Web | Mở `http://localhost/` và `http://localhost:8001/blog/blog1.html` | Trang chủ và bài blog hiển thị. `/blog/` hiện trả `301` về `/`, chưa đáp ứng ví dụ `200` trong đề. |
-| 2. App | `curl.exe http://localhost:8081/hello` và `curl.exe http://localhost/api/hello` | Cả hai trả `{"message":"Hello from App Server!"}`. |
-| 3. Database | Chạy lệnh SQL bên dưới với database `minicloud` | Bảng `notes` có dữ liệu. |
-| 4. Keycloak | Mở `http://localhost:8080`, đăng nhập `admin/admin` | Admin Console và realm `master` hoạt động. |
-| 5. Object storage | Mở `http://localhost:9001`, đăng nhập bằng tài khoản MinIO trong `.env`; tạo bucket `demo`, upload `web/html/index.html` | File xuất hiện và tải lại được. |
-| 6. DNS | Chạy lệnh `dig` bên dưới | `web-frontend-server.cloud.local` trả `10.10.10.10`. |
-| 7. Prometheus | Mở `http://localhost:9090/targets` | Target node exporter là `UP`. |
-| 8. Grafana | Mở `http://localhost:3000`, đăng nhập `admin/admin`, vào System Health | Ba biểu đồ CPU, RAM, network có dữ liệu. Nếu `No data` hoặc lỗi datasource thì chưa đạt. |
-| 9. Gateway | Gọi `/`, `/api/hello`, `/auth/` qua cổng 80 | Truy cập được ba tuyến web, app, auth; Keycloak Console có thể mở trực tiếp ở cổng 8080. |
-| 10. Mạng Docker | Ping các alias từ container DNS bằng lệnh bên dưới | `web`, `app-server`, `db`, `keycloak`, `minio`, `prometheus`, `grafana`, `dns-server` phản hồi. |
+| 1 | Mở `/` và `/blog/blog1.html` | Trang chủ và bài viết hiển thị. |
+| 2 | Mở `:8081/hello` và `/api/hello` | Cùng JSON `Hello from App Server!`. |
+| 3 | Truy vấn `minicloud.notes` | Có bảng và dữ liệu mẫu. |
+| 4 | Mở `:8080`, đăng nhập Keycloak `admin/admin` | Admin Console hoạt động. |
+| 5 | Mở MinIO Console `:9001`, tạo bucket `demo`, upload `web/html/index.html` | File xuất hiện và tải lại được. |
+| 6 | Tra DNS `web-frontend-server.cloud.local` | Trả `10.10.10.10`. |
+| 7 | Mở Prometheus `:9090/targets` | Node exporter `UP`. |
+| 8 | Mở Grafana `:3000`, đăng nhập `admin/admin` | Biểu đồ CPU, RAM, network có dữ liệu. |
+| 9 | Mở `/`, `/api/hello`, `/auth/` qua cổng 80 | Gateway chuyển đến web, app, Keycloak. |
+| 10 | Ping các alias trong `cloud-net` | `web`, `app-server`, `db`, `keycloak`, `minio`, `prometheus`, `grafana`, `dns-server` phản hồi. |
 
-```powershell
-# Mục 3: database mặc định
-docker compose exec relational-database-server mariadb -uroot -proot -D minicloud -e "SHOW TABLES; SELECT * FROM notes;"
-
-# Mục 6: DNS mặc định (image Bind9 có sẵn dig)
+```sh
+docker compose exec relational-database-server mariadb -uroot -proot -D minicloud -e "SELECT * FROM notes;"
 docker compose exec internal-dns-server dig '@127.0.0.1' web-frontend-server.cloud.local +short
-
-# Mục 9: ba tuyến gateway
-curl.exe -I http://localhost/
-curl.exe http://localhost/api/hello
-curl.exe -I http://localhost/auth/
-
-# Mục 10: ping các service trên cloud-net
-"web","app-server","db","keycloak","minio","prometheus","grafana","dns-server" |
-  ForEach-Object { docker compose exec -T internal-dns-server ping -c 1 -W 2 $_ }
+docker compose exec internal-dns-server ping -c 1 web
 ```
 
-### Bước 3 — Demo 10 yêu cầu mở rộng
+### 10 mục mở rộng
 
-| # | Thao tác | Kết quả cần thấy |
+| # | Demo | Kết quả cần thấy |
 |---|---|---|
-| 1. Ba blog tĩnh | Từ trang chủ mở `/blog/blog1.html`, `/blog/blog2.html`, `/blog/blog3.html` | Mỗi bài có ảnh và đường về trang chủ; ảnh Unsplash cần Internet. |
-| 2. API sinh viên | `curl.exe http://localhost/api/student` | JSON gồm 5 bản ghi với `id`, `name`, `major`, `gpa`. |
-| 3. Student DB | Chạy SQL `studentdb.students` bên dưới | Có các cột theo đề và ít nhất 3 bản ghi. |
-| 4. Realm theo MSSV | Mở Keycloak, chọn `realm_<MSSV>`, xem `sv01`, `sv02`, client public `flask-app`; lấy token theo lệnh bên dưới | `/api/secure` trả `Secure resource OK` với token hợp lệ, không token trả `401`. |
-| 5. Hai bucket | Trong MinIO Console xem `profile-pics/avatar.jpg` và `documents/sample-report.pdf`; tải bằng lệnh bên dưới | Ảnh và PDF tải công khai được. |
-| 6. DNS mở rộng | Truy vấn ba tên bằng `dig` bên dưới | App `10.10.10.20`, MinIO `10.10.10.30`, Keycloak `10.10.10.40`. Đây là IP minh họa trong zone, không phải IP container. |
-| 7. Web target | Mở Prometheus Targets, chạy `up{job="web"}` | Hai web target `UP`, giá trị `1`. |
-| 8. Grafana theo MSSV | Mở System Health | Dashboard cần mang MSSV thật và có dữ liệu CPU/RAM/network; hiện tên vẫn là `System Health of MSSV` và UID datasource cần kiểm tra. |
-| 9. Route `/student/` | `curl.exe http://localhost/student/` | Nhận cùng JSON 5 sinh viên qua gateway. |
-| 10. Round robin | Chạy lệnh xem header bên dưới | `X-Upstream-Addr` luân phiên giữa hai web node. |
+| 1 | Mở `/blog/blog1.html`, `blog2.html`, `blog3.html` từ trang chủ | Mỗi bài có ảnh và liên kết về trang chủ. |
+| 2 | Mở `/api/student` | JSON gồm 5 sinh viên với `id`, `name`, `major`, `gpa`. |
+| 3 | Truy vấn `studentdb.students` | Đủ cột và ít nhất 3 bản ghi. |
+| 4 | Trong Keycloak chọn `realm_<MSSV>`; xem `sv01`, `sv02`, client `flask-app`; lấy token và gọi `/api/secure` | Token hợp lệ trả `Secure resource OK`; thiếu token trả `401`. |
+| 5 | Mở MinIO Console `:9001` và hai URL object bên dưới | Có `profile-pics/avatar.jpg` và `documents/sample-report.pdf`; tải được. |
+| 6 | Tra DNS `app-backend`, `minio`, `keycloak` trong `cloud.local` | Lần lượt `10.10.10.20`, `.30`, `.40`. |
+| 7 | Trong Prometheus chạy `up{job="web"}` | Hai web target đều có giá trị `1`. |
+| 8 | Mở dashboard System Health trong Grafana | Tiêu đề mang MSSV và ba biểu đồ có dữ liệu. |
+| 9 | Mở `/student/` qua gateway | Cùng JSON 5 sinh viên. |
+| 10 | Tải lại `/` nhiều lần, xem response header `X-Upstream-Addr` trong Developer Tools | Header luân phiên giữa hai web node. |
 
-```powershell
-# Mục 3: studentdb
-docker compose exec relational-database-server mariadb -uroot -proot -D studentdb -e "DESCRIBE students; SELECT id,student_id,fullname,dob,major FROM students;"
-
-# Mục 4: thay realm và password bằng giá trị trong .env
-$realm = "realm_<MSSV>"
-$token = (Invoke-RestMethod -Method Post `
-  -Uri "http://localhost:8080/realms/$realm/protocol/openid-connect/token" `
-  -Body @{grant_type="password"; client_id="flask-app"; username="sv01"; password="student123"}).access_token
-Invoke-RestMethod -Uri "http://localhost/api/secure" -Headers @{Authorization="Bearer $token"}
-curl.exe -i http://localhost/api/secure
-
-# Mục 5: GET và lưu hai object công khai
-curl.exe -f -o avatar-demo.jpg http://localhost:9000/profile-pics/avatar.jpg
-curl.exe -f -o report-demo.pdf http://localhost:9000/documents/sample-report.pdf
-
-# Mục 6: DNS mở rộng
+```sh
+docker compose exec relational-database-server mariadb -uroot -proot -D studentdb -e "DESCRIBE students; SELECT * FROM students;"
 docker compose exec internal-dns-server dig '@127.0.0.1' app-backend.cloud.local +short
 docker compose exec internal-dns-server dig '@127.0.0.1' minio.cloud.local +short
 docker compose exec internal-dns-server dig '@127.0.0.1' keycloak.cloud.local +short
-
-# Mục 10: xem hai địa chỉ upstream luân phiên
-1..6 | ForEach-Object { (Invoke-WebRequest "http://localhost/?lb=$_").Headers["X-Upstream-Addr"] }
 ```
 
-### Demo từ EC2
+Object công khai: `http://localhost:9000/profile-pics/avatar.jpg` và `http://localhost:9000/documents/sample-report.pdf`. Để lấy token, dùng một trong hai lệnh sau và thay realm/mật khẩu theo `.env`:
 
-Trên EC2, đồng bộ repository và `.env`, chạy `docker compose up -d --build`, sau đó kiểm tra `docker compose ps -a`. Trong các URL trên, thay `localhost` bằng public IP hoặc DNS của EC2. Lệnh `docker compose exec` chạy trong phiên SSH trên EC2. Để mở các trang từ laptop, Security Group cần cho phép các cổng TCP `80`, `8080`, `9000`, `9001`, `9090`, `3000` và UDP `1053` nếu truy vấn DNS trực tiếp từ ngoài. Không kết luận EC2 đã đạt chỉ dựa trên kết quả local.
+**PowerShell:**
+
+```powershell
+$realm = "realm_<MSSV>"
+$token = (Invoke-RestMethod -Method Post -Uri "http://localhost:8080/realms/$realm/protocol/openid-connect/token" -Body @{grant_type="password"; client_id="flask-app"; username="sv01"; password="student123"}).access_token
+Invoke-RestMethod -Uri "http://localhost/api/secure" -Headers @{Authorization="Bearer $token"}
+```
+
+**Bash (macOS/Linux/EC2):**
+
+```sh
+realm='realm_<MSSV>'
+token=$(curl -s -X POST "http://localhost:8080/realms/$realm/protocol/openid-connect/token" -d grant_type=password -d client_id=flask-app -d username=sv01 -d password=student123 | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+curl -H "Authorization: Bearer $token" http://localhost/api/secure
+```
+
+**Cần kiểm tra trước khi chấm:** `/blog/` hiện chuyển `301` về `/` thay vì trả trang blog `200` như ví dụ đề. Dashboard Grafana vẫn mang chữ `MSSV` và datasource UID trong dashboard cần khớp cấu hình datasource; chỉ đánh dấu mục Grafana đạt khi ba biểu đồ có dữ liệu. Bản ghi DNS `10.10.10.x` là dữ liệu minh họa theo đề, không phải IP container.
+
+Trên EC2, chạy cùng lệnh Compose qua SSH và thay `localhost` trong URL bằng public IP/DNS. Mở các cổng cần trình bày trong Security Group: TCP `80`, `8080`, `9000`, `9001`, `9090`, `3000`; UDP `1053` chỉ khi truy vấn DNS từ ngoài EC2.
