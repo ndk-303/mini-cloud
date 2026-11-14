@@ -1,0 +1,12 @@
+# Local Docker Desktop limits; the base file retains its EC2 memory limits.
+services:
+  internal-dns-server:
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+  monitoring-grafana-dashboard-server:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
