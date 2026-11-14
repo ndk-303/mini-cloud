@@ -1,12 +1,13 @@
-from flask import Flask, jsonify, request, g
+from flask import Flask, Response, jsonify, request, g
 import time, requests, os, json
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 from functools import wraps
 from jose import jwt
 import pymysql
 import pymysql.cursors
 import boto3
 from botocore.client import Config
+from botocore.exceptions import ClientError
 
 ISSUER   = os.getenv("OIDC_ISSUER",   "http://authentication-identity-server:8080/realms/master")
 AUDIENCE = os.getenv("OIDC_AUDIENCE", "myapp")
@@ -242,8 +243,8 @@ def blogs_get(bid):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id, title, content, author_id, image_url,
-                       DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%sZ') AS created_at,
-                       DATE_FORMAT(updated_at, '%Y-%m-%dT%H:%i:%sZ') AS updated_at
+                       DATE_FORMAT(created_at, '%%Y-%%m-%%dT%%H:%%i:%%sZ') AS created_at,
+                       DATE_FORMAT(updated_at, '%%Y-%%m-%%dT%%H:%%i:%%sZ') AS updated_at
                 FROM blogs WHERE id = %s
             """, (bid,))
             row = cur.fetchone()
@@ -315,6 +316,25 @@ def blogs_delete(bid):
 
 # ── S3 Object Upload ─────────────────────────────────────────────────────────
 
+@app.get("/uploads/<path:key>")
+def read_uploaded_image(key):
+    try:
+        obj = get_s3().get_object(Bucket=S3_BUCKET, Key=key)
+    except ClientError as error:
+        code = error.response.get("Error", {}).get("Code")
+        if code in ("NoSuchKey", "NotFound", "404"):
+            return jsonify(error="Image not found"), 404
+        return jsonify(error="Image storage unavailable"), 503
+    except Exception:
+        return jsonify(error="Image storage unavailable"), 503
+
+    body = obj["Body"]
+    response = Response(body.iter_chunks(chunk_size=64 * 1024), content_type=obj.get("ContentType") or "application/octet-stream")
+    response.content_length = obj.get("ContentLength")
+    response.call_on_close(body.close)
+    return response
+
+
 @app.post("/upload")
 @require_auth
 def upload_image():
@@ -334,8 +354,7 @@ def upload_image():
             f, S3_BUCKET, key,
             ExtraArgs={"ContentType": f.content_type or "application/octet-stream"}
         )
-        client_host = request.headers.get("X-Forwarded-Host") or request.host.split(":")[0]
-        url = f"http://{client_host}:9000/{S3_BUCKET}/{key}"
+        url = f"/api/uploads/{quote(key, safe='/')}"
         return jsonify(url=url)
     except Exception as e:
         return jsonify(error=f"Upload failed: {e}"), 503

@@ -25,8 +25,8 @@ services:
 
   # ── 1b. Web Frontend Instance 2 ──────────
   web-frontend-server2:
-    build: ./web
     image: ${DOCKER_USER:-hotensv}/minicloud-web:latest
+    pull_policy: never
     container_name: web-frontend-server2
     ports: ["8002:80"]
     volumes:
@@ -85,6 +85,30 @@ services:
       resources:
         limits:
           memory: 180M
+
+  db-schema-migration:
+    image: mariadb:11
+    depends_on:
+      - relational-database-server
+    environment:
+      MYSQL_PWD: root
+    volumes:
+      - ./db/init/003_blogs.sql:/migration.sql:ro
+    command:
+      - /bin/bash
+      - -ec
+      - |
+        for attempt in {1..60}; do
+          if mariadb -h relational-database-server -u root -e 'SELECT 1' >/dev/null 2>&1; then
+            mariadb -h relational-database-server -u root < /migration.sql
+            exit 0
+          fi
+          sleep 2
+        done
+        echo 'MariaDB did not become ready for schema migration' >&2
+        exit 1
+    networks: [cloud-net]
+    restart: "no"
   # ── 4. Authentication / Identity ───────────────────────────
   authentication-identity-server:
     image: quay.io/keycloak/keycloak:latest
@@ -106,6 +130,19 @@ services:
       resources:
         limits:
           memory: 580M
+
+  keycloak-bootstrap:
+    image: ${DOCKER_USER:-hotensv}/minicloud-app:latest
+    pull_policy: never
+    depends_on:
+      - authentication-identity-server
+    command: ["python", "setup_keycloak.py"]
+    environment:
+      KEYCLOAK_BASE_URL: http://authentication-identity-server:8080
+      KEYCLOAK_ADMIN_USERNAME: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    networks: [cloud-net]
+    restart: "no"
 
   # ── 5. Object Storage +─────────────────────
   object-storage-server:
@@ -208,10 +245,16 @@ services:
     image: ${DOCKER_USER:-hotensv}/minicloud-proxy:latest
     container_name: api-gateway-proxy-server
     depends_on:
-      - web-frontend-server1
-      - web-frontend-server2
-      - application-backend-server
-      - authentication-identity-server
+      web-frontend-server1:
+        condition: service_started
+      web-frontend-server2:
+        condition: service_started
+      application-backend-server:
+        condition: service_started
+      db-schema-migration:
+        condition: service_completed_successfully
+      keycloak-bootstrap:
+        condition: service_completed_successfully
     ports: ["80:80"]
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro

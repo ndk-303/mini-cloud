@@ -1,6 +1,6 @@
 # MyMiniCloud – Cloud Simulation Platform
 
-Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net`, điều phối linh hoạt qua `docker-compose.yml`, tích hợp **Dynamic Scaling**, tự động hóa với **GitHub Actions CI/CD** và được tối ưu hóa tài nguyên hoàn hảo cho máy chủ **VPS 1GB RAM (AWS EC2)**.
+Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMiniCloud**) gồm **9 loại máy chủ cơ bản**, vận hành bằng Docker Container trong mạng nội bộ `cloud-net`, điều phối qua `docker-compose.yml` và cân bằng tải giữa **2 web node**. GitHub Actions hiện build/push image; EC2 được triển khai thủ công.
 
 ---
 
@@ -26,9 +26,9 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ```text
 .
-├── app/                  # Custom Backend Flask API + students.json (có Dockerfile)
+├── app/                  # Custom Backend Flask API, students.json, setup_keycloak.py (có Dockerfile)
 ├── auth/                 # Keycloak identity volume (.gitkeep)
-├── db/                   # MariaDB init scripts (001_init.sql, 002_studentdb.sql)
+├── db/                   # MariaDB init scripts và migration (001–003)
 ├── dns/                  # Bind9 DNS configs & db.cloud.local zone
 ├── grafana/              # Grafana dashboards (.gitkeep)
 ├── monitor/              # Prometheus config (prometheus.yml)
@@ -55,40 +55,34 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
    * **Keycloak**: Giới hạn JVM Heap `-Xms64m -Xmx300m -XX:+UseSerialGC` và trần RAM `450M`.
    * **MariaDB**: Tắt `performance_schema=OFF`, đệm `innodb_buffer_pool_size=64M`.
    * **SeaweedFS**: Thay thế MinIO giúp giảm tải RAM từ 150MB xuống chỉ còn **~30MB - 50MB**.
-   * Toàn bộ services đều được thiết lập trần bộ nhớ (`deploy.resources.limits.memory`).
+   * Các service chạy thường trực được thiết lập trần bộ nhớ (`deploy.resources.limits.memory`).
 
 ---
 
-## 🔄 Dynamic Scaling (Mở rộng Web Server không cần sửa code)
+## 🔄 Cân bằng tải giữa 2 web node
 
-Hệ thống sử dụng Docker Internal DNS Resolver (`127.0.0.11`) trong Nginx Proxy để tự động cân bằng tải Round-Robin khi scale:
+Compose chạy sẵn `web-frontend-server1` và `web-frontend-server2`. Nginx Proxy phân phối request round robin giữa hai node này. Cấu hình hiện tại chưa hỗ trợ lệnh `--scale` để tăng lên 4 node.
 
 ```bash
-# Chạy với 2 Web Frontend instances
-docker compose up -d --scale web-frontend-server=2
-
-# Tăng tải lên 4 Web Frontend instances
-docker compose up -d --scale web-frontend-server=4
-
-# Kiểm tra danh sách container
-docker compose ps
+docker compose up -d --build
+docker compose ps -a
+# Gọi nhiều lần và xem X-Upstream-Addr thay đổi giữa hai web node
+curl -I http://localhost/
+curl -I http://localhost/
 ```
 
 ---
 
-## 🚀 Tự Động Hóa CI/CD (GitHub Actions)
+## 🚀 Build image bằng GitHub Actions, deploy EC2 thủ công
 
 Mỗi lần `git push origin main`:
-1. **CI**: GitHub Actions tự động build 3 custom images (`web`, `app`, `proxy`) và push lên Docker Hub của bạn.
-2. **CD**: SSH an toàn vào EC2, tự động đồng bộ file cấu hình qua `scp`, pull images mới nhất và reload container (`docker compose up -d`).
+1. GitHub Actions build 3 custom images (`web`, `app`, `proxy`) và push lên Docker Hub.
+2. Trên EC2, đồng bộ repository (gồm `docker-compose.yml`, `db/init`, `web/html`, `web/conf.default`, `proxy/nginx.conf`), rồi chạy `docker compose pull && docker compose up -d`. Workflow hiện chưa tự SSH/deploy lên EC2.
 
 ### Cấu hình Secrets trên GitHub Repo:
 Vào **Settings** ➔ **Secrets and variables** ➔ **Actions**:
 * `DOCKERHUB_USERNAME`: Tên tài khoản Docker Hub.
 * `DOCKERHUB_TOKEN`: Personal Access Token trên Docker Hub (quyền *Read & Write*).
-* `EC2_HOST`: Địa chỉ IP Public hoặc Public IPv4 DNS của EC2.
-* `EC2_SSH_KEY`: Toàn bộ nội dung file `.pem` dùng để SSH.
-* `EC2_USER`: `ec2-user` (Amazon Linux) hoặc `ubuntu` (Ubuntu).
 
 ---
 
@@ -109,10 +103,12 @@ Hệ thống đã được nâng cấp thành **Web App Blog Sinh Viên hoàn ch
   - Xem danh sách bài viết blog công khai và đọc chi tiết bài viết.
 
 ### 2. Thiết lập tự động Keycloak:
-Chạy script tự động cấu hình client `flask-app`, role `admin`, `student` và 5 tài khoản sinh viên mẫu:
+`docker compose up -d --build` chạy service `keycloak-bootstrap` sau khi Keycloak khởi động. Service này chờ Keycloak sẵn sàng, tạo client `flask-app`, role `admin`/`student` và 5 tài khoản sinh viên mẫu; gateway chỉ khởi động sau khi bước này và migration DB hoàn tất. Xem kết quả bằng:
 ```bash
-python setup_keycloak.py
+docker compose ps -a
+docker compose logs keycloak-bootstrap db-schema-migration
 ```
+Hai service setup kết thúc với trạng thái `Exited (0)` là bình thường. Nếu cần chạy lại cấu hình Keycloak, dùng `docker compose run --rm keycloak-bootstrap`.
 
 ---
 
@@ -122,7 +118,9 @@ python setup_keycloak.py
 | :--- | :--- | :--- |
 | **Web App (Student Blog)** | `http://<IP_EC2>/` | Giao diện Web App Blog Sinh Viên hoàn chỉnh (SPA, Load-balanced) |
 | **Blog API (Public)** | `http://<IP_EC2>/api/blogs` | Danh sách bài blog (JSON) từ MariaDB |
+| **Chi tiết blog** | `http://<IP_EC2>/api/blogs/1` | Một bài blog, gồm `created_at` và `updated_at` |
 | **Upload Ảnh (S3)** | `POST http://<IP_EC2>/api/upload` | Upload ảnh lên SeaweedFS S3 (Yêu cầu JWT) |
+| **Xem ảnh đã upload** | `http://<IP_EC2>/api/uploads/<key>` | Trình duyệt đọc ảnh qua API Gateway; URL này được trả về sau upload |
 | **API Hello** | `http://<IP_EC2>/api/hello` | Trả về JSON `{"message": "Hello from App Server!"}` |
 | **API Sinh viên (JSON)** | `http://<IP_EC2>/student/` | Danh sách 5 sinh viên từ `students.json` |
 | **API Sinh viên (DB CRUD)** | `http://<IP_EC2>/api/students-db` | Quản lý sinh viên trên MariaDB `studentdb` (Yêu cầu Role `admin`) |
