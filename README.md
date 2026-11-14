@@ -4,7 +4,7 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ---
 
-## 🏗️ Kiến Trúc 9 Servers & Phân Loại Image
+## Kiến Trúc 9 Servers & Phân Loại Image
 
 | STT | Service Name | Loại Image | Tên Image | Port (Host:Container) | Vai trò |
 | :-- | :--- | :--- | :--- | :--- | :--- |
@@ -22,7 +22,7 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ---
 
-## 📁 Cấu Trúc Thư Mục
+## Cấu Trúc Thư Mục
 
 ```text
 .
@@ -43,7 +43,7 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ---
 
-## ⚡ Tối Ưu Hóa Bộ Nhớ Cho VPS 1GB RAM (AWS EC2)
+## Tối Ưu Hóa Bộ Nhớ Cho VPS 1GB RAM (AWS EC2)
 
 Để giảm nguy cơ thiếu RAM khi chạy các service trên máy chủ 1GB RAM:
 
@@ -59,7 +59,7 @@ Hệ thống mô phỏng nền tảng điện toán đám mây thu nhỏ (**MyMi
 
 ---
 
-## 🔄 Cân bằng tải giữa 2 web node
+## Cân bằng tải giữa 2 web node
 
 Compose chạy sẵn `web-frontend-server1` và `web-frontend-server2`. Nginx Proxy phân phối request round robin giữa hai node này. Cấu hình hiện tại chưa hỗ trợ lệnh `--scale` để tăng lên 4 node.
 
@@ -73,20 +73,20 @@ curl -I http://localhost/
 
 ---
 
-## 🚀 Build image bằng GitHub Actions, deploy EC2 thủ công
+## Build image bằng GitHub Actions, deploy EC2 thủ công
 
 Mỗi lần `git push origin main`:
 1. GitHub Actions build 3 custom images (`web`, `app`, `proxy`) và push lên Docker Hub.
 2. Trên EC2, đồng bộ repository cùng `.env`, rồi chạy `docker compose up -d --build`. Workflow hiện chưa tự SSH/deploy lên EC2.
 
 ### Cấu hình Secrets trên GitHub Repo:
-Vào **Settings** ➔ **Secrets and variables** ➔ **Actions**:
+Vào **Settings > Secrets and variables > Actions**:
 * `DOCKERHUB_USERNAME`: Tên tài khoản Docker Hub.
 * `DOCKERHUB_TOKEN`: Personal Access Token trên Docker Hub (quyền *Read & Write*).
 
 ---
 
-## 🎓 Student Blog Platform & Phân Quyền 2 Tầng (Role-Based Access Control)
+## Student Blog Platform & Phân Quyền 2 Tầng (Role-Based Access Control)
 
 Hệ thống đã được nâng cấp thành **Web App Blog Sinh Viên hoàn chỉnh** với trải nghiệm Single Page Application (Bootstrap 5, Responsive, Hash Routing) phân quyền rõ ràng:
 
