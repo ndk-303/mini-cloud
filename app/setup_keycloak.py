@@ -11,7 +11,7 @@ REALM = os.getenv("KEYCLOAK_REALM", "realm_SV001")
 STUDENT_USERS = [("sv01", os.getenv("SV01_PASSWORD", "student123")), ("sv02", os.getenv("SV02_PASSWORD", "student123"))]
 
 
-def wait_for_keycloak(session, attempts=60):
+def wait_for_keycloak(session, attempts=300):
     url = f"{BASE}/realms/master/.well-known/openid-configuration"
     for attempt in range(attempts):
         try:

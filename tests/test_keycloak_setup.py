@@ -1,4 +1,5 @@
 import json
+import importlib.util
 import os
 import subprocess
 import sys
@@ -6,6 +7,27 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
+
+
+def test_bootstrap_waits_for_slow_first_keycloak_start(monkeypatch):
+    script = Path(__file__).resolve().parents[1] / "app" / "setup_keycloak.py"
+    spec = importlib.util.spec_from_file_location("setup_keycloak_for_wait_test", script)
+    setup_keycloak = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(setup_keycloak)
+
+    class SlowSession:
+        calls = 0
+
+        def get(self, _url, timeout):
+            self.calls += 1
+            return type("Response", (), {"ok": self.calls == 62})()
+
+    session = SlowSession()
+    monkeypatch.setattr(setup_keycloak.time, "sleep", lambda _seconds: None)
+
+    setup_keycloak.wait_for_keycloak(session)
+
+    assert session.calls == 62
 
 
 def test_bootstrap_uses_configured_keycloak_and_can_run_twice():
